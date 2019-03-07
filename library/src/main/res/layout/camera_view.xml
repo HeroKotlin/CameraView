@@ -76,14 +76,17 @@
             android:layout_marginBottom="@dimen/camera_view_guide_label_margin_bottom"
             android:textSize="@dimen/camera_view_guide_label_text_size"
             android:textColor="@color/camera_view_guide_label_text_color"
-            android:text="轻触拍照，按住摄像"/>
+            android:visibility="gone"
+            tools:text="轻触拍照，按住摄像"/>
 
     <RelativeLayout
-            android:layout_width="300dp"
+            android:id="@+id/chooseView"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
             android:layout_alignParentBottom="true"
-            android:layout_marginBottom="@dimen/camera_view_capture_button_margin_bottom">
+            android:layout_marginBottom="@dimen/camera_view_capture_button_margin_bottom"
+            android:visibility="gone">
 
         <com.github.herokotlin.circleview.CircleView
                 android:id="@+id/cancelButton"

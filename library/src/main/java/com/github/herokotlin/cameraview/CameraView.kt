@@ -1,5 +1,6 @@
 package com.github.herokotlin.cameraview
 
+import android.animation.Animator
 import android.content.Context
 import android.support.v4.content.ContextCompat
 import android.util.AttributeSet
@@ -172,6 +173,20 @@ class CameraView: FrameLayout {
 
     }
 
+    fun init(configuration: CameraViewConfiguration) {
+
+        if (configuration.guideLabelTitle.isNotEmpty()) {
+            guideLabel.visibility = View.VISIBLE
+            guideLabel.text = configuration.guideLabelTitle
+            if (configuration.guideLabelFadeOutDelay > 0) {
+                postDelayed({
+                    onGuideLabelFadeOut()
+                }, configuration.guideLabelFadeOutDelay * 1000)
+            }
+        }
+
+    }
+
     fun start() {
         captureView.start()
     }
@@ -190,6 +205,26 @@ class CameraView: FrameLayout {
 
     fun capturePhoto() {
         captureView.captureImage()
+    }
+
+    private fun onGuideLabelFadeOut() {
+        guideLabel.animate().alpha(0f).setDuration(1000).setListener(object: Animator.AnimatorListener {
+            override fun onAnimationRepeat(animation: Animator?) {
+
+            }
+
+            override fun onAnimationEnd(animation: Animator?) {
+                guideLabel.visibility = View.GONE
+            }
+
+            override fun onAnimationCancel(animation: Animator?) {
+
+            }
+
+            override fun onAnimationStart(animation: Animator?) {
+
+            }
+        }).start()
     }
 
     private fun showPreviewView() {
