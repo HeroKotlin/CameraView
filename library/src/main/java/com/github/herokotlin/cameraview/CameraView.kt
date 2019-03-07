@@ -25,7 +25,14 @@ class CameraView: RelativeLayout {
         const val TAG = "CameraView"
     }
 
+    private lateinit var configuration: CameraViewConfiguration
+
     private var activeAnimator: ValueAnimator? = null
+
+    private val chooseViewWidth: Int by lazy {
+        val radius = resources.getDimensionPixelSize(R.dimen.camera_view_capture_button_center_radius_normal)
+        (radius * 2 * 3.2).toInt()
+    }
 
     constructor(context: Context) : super(context) {
         init()
@@ -182,6 +189,8 @@ class CameraView: RelativeLayout {
 
     fun init(configuration: CameraViewConfiguration) {
 
+        this.configuration = configuration
+
         if (configuration.guideLabelTitle.isNotEmpty()) {
             guideLabel.visibility = View.VISIBLE
             guideLabel.text = configuration.guideLabelTitle
@@ -204,10 +213,24 @@ class CameraView: RelativeLayout {
 
     fun startRecordVideo() {
         captureView.captureVideo()
+        startAnimation(
+            configuration.videoMaxDuration,
+            LinearInterpolator(),
+            {
+                // 避免结束时还无法到达满圆
+                captureButton.trackValue = if (it > 0.99) 1f else it
+                captureButton.invalidate()
+            },
+            {
+                captureButton.trackValue = 0f
+                captureView.stopVideo()
+            }
+        )
     }
 
     fun stopRecordVideo() {
         captureView.stopVideo()
+        activeAnimator?.cancel()
     }
 
     fun capturePhoto() {
@@ -231,18 +254,17 @@ class CameraView: RelativeLayout {
 
     private fun showPreviewView() {
 
-        val chooseViewWidth = 600
         val chooseLayoutParams = chooseView.layoutParams
 
         startAnimation(
-            2000,
+            200,
             LinearInterpolator(),
             {
                 val alpha = 1 - it
 
                 chooseLayoutParams.width = (chooseViewWidth * it).toInt()
                 chooseView.alpha = it
-                Log.d(TAG, "${chooseLayoutParams.width}")
+                chooseView.requestLayout()
 
                 flashButton.alpha = alpha
                 flipButton.alpha = alpha
@@ -264,17 +286,17 @@ class CameraView: RelativeLayout {
 
     private fun hidePreviewView() {
 
-        val chooseViewWidth = 600
         val chooseLayoutParams = chooseView.layoutParams
 
         startAnimation(
-            2000,
+            200,
             LinearInterpolator(),
             {
                 val alpha = 1 - it
 
                 chooseLayoutParams.width = (chooseViewWidth * alpha).toInt()
                 chooseView.alpha = alpha
+                chooseView.requestLayout()
 
                 flashButton.alpha = it
                 flipButton.alpha = it
@@ -298,7 +320,7 @@ class CameraView: RelativeLayout {
 
     private fun startAnimation(duration: Long, interpolator: TimeInterpolator, update: (Float) -> Unit, complete: (() -> Unit)? = null) {
 
-        this.activeAnimator?.cancel()
+        activeAnimator?.cancel()
 
         val animator = ValueAnimator.ofFloat(0f, 1f)
 
@@ -318,7 +340,7 @@ class CameraView: RelativeLayout {
         })
         animator.start()
 
-        this.activeAnimator = animator
+        activeAnimator = animator
 
     }
 

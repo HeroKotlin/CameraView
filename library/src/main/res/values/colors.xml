@@ -7,5 +7,5 @@
     <color name="camera_view_capture_button_track_color">#e61ca30f</color>
 
     <color name="camera_view_submit_button_center_color">#FFF</color>
-    <color name="camera_view_cancel_button_center_color">#e6ffffff</color>
+    <color name="camera_view_cancel_button_center_color">#FFF</color>
 </resources>
