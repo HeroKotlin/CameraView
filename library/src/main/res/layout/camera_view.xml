@@ -7,10 +7,16 @@
               android:layout_height="match_parent">
 
     <com.wonderkiln.camerakit.CameraView
-            android:id="@+id/camera"
+            android:id="@+id/captureView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:adjustViewBounds="true"/>
+
+    <com.github.herokotlin.cameraview.view.PreviewView
+            android:id="@+id/previewView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone"/>
 
     <ImageButton
             android:id="@+id/flipButton"
@@ -71,5 +77,44 @@
             android:textSize="@dimen/camera_view_guide_label_text_size"
             android:textColor="@color/camera_view_guide_label_text_color"
             android:text="轻触拍照，按住摄像"/>
+
+    <RelativeLayout
+            android:layout_width="300dp"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="@dimen/camera_view_capture_button_margin_bottom">
+
+        <com.github.herokotlin.circleview.CircleView
+                android:id="@+id/cancelButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_alignParentLeft="true"
+                app:circle_view_center_image="@drawable/camera_view_cancel"
+
+                app:circle_view_center_color="@color/camera_view_cancel_button_center_color"
+                app:circle_view_center_radius="@dimen/camera_view_cancel_button_center_radius"
+
+                app:circle_view_ring_width="0dp"
+                app:circle_view_track_width="0dp"
+                app:circle_view_track_value="0"/>
+
+        <com.github.herokotlin.circleview.CircleView
+                android:id="@+id/submitButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_alignParentRight="true"
+                app:circle_view_center_image="@drawable/camera_view_submit"
+
+                app:circle_view_center_color="@color/camera_view_submit_button_center_color"
+                app:circle_view_center_radius="@dimen/camera_view_submit_button_center_radius"
+
+                app:circle_view_ring_width="0dp"
+                app:circle_view_track_width="0dp"
+                app:circle_view_track_value="0"/>
+
+    </RelativeLayout>
 
 </RelativeLayout>

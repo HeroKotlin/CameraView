@@ -5,6 +5,7 @@ import android.support.v4.content.ContextCompat
 import android.util.AttributeSet
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.View
 import android.widget.FrameLayout
 import com.github.herokotlin.circleview.CircleView
 import com.github.herokotlin.circleview.CircleViewCallback
@@ -34,9 +35,12 @@ class CameraView: FrameLayout {
 
         LayoutInflater.from(context).inflate(R.layout.camera_view, this)
 
-        camera.addCameraKitListener(object: CameraKitEventListener {
+        captureView.addCameraKitListener(object: CameraKitEventListener {
             override fun onVideo(event: CameraKitVideo?) {
-                event?.videoFile
+                event?.let {
+                    showPreviewView()
+                    previewView.video = it.videoFile.absolutePath
+                }
             }
 
             override fun onEvent(event: CameraKitEvent?) {
@@ -47,61 +51,98 @@ class CameraView: FrameLayout {
             }
 
             override fun onImage(event: CameraKitImage?) {
-                event?.bitmap
+                event?.let {
+                    showPreviewView()
+                    previewView.image = it.bitmap
+                }
             }
 
             override fun onError(event: CameraKitError?) {
-                Log.e(TAG, "${event?.exception}")
+                event?.let {
+                    Log.e(TAG, "${it.exception}")
+                }
             }
         })
 
-        captureButton.callback = object: CircleViewCallback {
+        val circleViewCallback = object: CircleViewCallback {
             override fun onLongPressEnd(circleView: CircleView) {
-                stopRecordVideo()
+                if (circleView == captureButton) {
+                    stopRecordVideo()
+                }
             }
 
             override fun onLongPressStart(circleView: CircleView) {
-                startRecordVideo()
+                if (circleView == captureButton) {
+                    startRecordVideo()
+                }
             }
 
             override fun onTouchDown(circleView: CircleView) {
-                circleView.centerColor = ContextCompat.getColor(context, R.color.camera_view_capture_button_center_color_pressed)
-                circleView.invalidate()
+                if (circleView == captureButton) {
+                    circleView.centerColor =
+                        ContextCompat.getColor(context, R.color.camera_view_capture_button_center_color_pressed)
+                    circleView.invalidate()
+                }
             }
 
             override fun onTouchEnter(circleView: CircleView) {
-                circleView.centerColor = ContextCompat.getColor(context, R.color.camera_view_capture_button_center_color_pressed)
-                circleView.invalidate()
+                if (circleView == captureButton) {
+                    circleView.centerColor =
+                        ContextCompat.getColor(context, R.color.camera_view_capture_button_center_color_pressed)
+                    circleView.invalidate()
+                }
             }
 
             override fun onTouchLeave(circleView: CircleView) {
-                circleView.centerColor = ContextCompat.getColor(context, R.color.camera_view_capture_button_center_color_normal)
-                circleView.invalidate()
+                if (circleView == captureButton) {
+                    circleView.centerColor =
+                        ContextCompat.getColor(context, R.color.camera_view_capture_button_center_color_normal)
+                    circleView.invalidate()
+                }
             }
 
             override fun onTouchUp(circleView: CircleView, inside: Boolean, isLongPress: Boolean) {
+
                 if (inside) {
-                    circleView.centerColor = ContextCompat.getColor(context, R.color.camera_view_capture_button_center_color_normal)
-                    circleView.invalidate()
+                    if (circleView == captureButton) {
+                        circleView.centerColor =
+                            ContextCompat.getColor(context, R.color.camera_view_capture_button_center_color_normal)
+                        circleView.invalidate()
+                    }
                 }
+
                 if (!inside || isLongPress) {
                     return
                 }
-                camera.captureImage()
+
+                if (circleView == captureButton) {
+                    capturePhoto()
+                }
+                else if (circleView == cancelButton) {
+                    hidePreviewView()
+                }
+                else if (circleView == submitButton) {
+                    hidePreviewView()
+                }
+
             }
         }
+
+        captureButton.callback = circleViewCallback
+        cancelButton.callback = circleViewCallback
+        submitButton.callback = circleViewCallback
 
         exitButton.setOnClickListener {
 
         }
 
         flipButton.setOnClickListener {
-            camera.toggleFacing()
+            captureView.toggleFacing()
         }
 
         flashButton.setOnClickListener {
 
-            camera.flash = when (camera.flash) {
+            captureView.flash = when (captureView.flash) {
                 CameraKit.Constants.FLASH_AUTO -> {
                     CameraKit.Constants.FLASH_ON
                 }
@@ -114,7 +155,7 @@ class CameraView: FrameLayout {
             }
 
             flashButton.setImageResource(
-                when (camera.flash) {
+                when (captureView.flash) {
                     CameraKit.Constants.FLASH_AUTO -> {
                         R.drawable.camera_view_flash_auto
                     }
@@ -132,19 +173,37 @@ class CameraView: FrameLayout {
     }
 
     fun start() {
-        camera.start()
+        captureView.start()
     }
 
     fun stop() {
-        camera.stop()
+        captureView.stop()
     }
 
     fun startRecordVideo() {
-        camera.captureVideo()
+        captureView.captureVideo()
     }
 
     fun stopRecordVideo() {
-        camera.stopVideo()
+        captureView.stopVideo()
+    }
+
+    fun capturePhoto() {
+        captureView.captureImage()
+    }
+
+    private fun showPreviewView() {
+
+        previewView.visibility = View.VISIBLE
+
+    }
+
+    private fun hidePreviewView() {
+
+        previewView.visibility = View.GONE
+        previewView.image = null
+        previewView.video = ""
+
     }
 
 }

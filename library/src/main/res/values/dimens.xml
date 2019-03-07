@@ -25,4 +25,8 @@
     <dimen name="camera_view_flash_button_width">50dp</dimen>
     <dimen name="camera_view_flash_button_height">44dp</dimen>
 
+    <dimen name="camera_view_submit_button_center_radius">38dp</dimen>
+
+    <dimen name="camera_view_cancel_button_center_radius">38dp</dimen>
+
 </resources>
