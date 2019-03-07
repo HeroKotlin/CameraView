@@ -1,24 +1,31 @@
 package com.github.herokotlin.cameraview
 
 import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
+import android.animation.TimeInterpolator
+import android.animation.ValueAnimator
 import android.content.Context
 import android.support.v4.content.ContextCompat
 import android.util.AttributeSet
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
+import android.view.animation.LinearInterpolator
 import android.widget.FrameLayout
+import android.widget.RelativeLayout
 import com.github.herokotlin.circleview.CircleView
 import com.github.herokotlin.circleview.CircleViewCallback
 import com.wonderkiln.camerakit.*
 import kotlinx.android.synthetic.main.camera_view.view.*
 
 
-class CameraView: FrameLayout {
+class CameraView: RelativeLayout {
 
     companion object {
         const val TAG = "CameraView"
     }
+
+    private var activeAnimator: ValueAnimator? = null
 
     constructor(context: Context) : super(context) {
         init()
@@ -208,36 +215,110 @@ class CameraView: FrameLayout {
     }
 
     private fun onGuideLabelFadeOut() {
-        guideLabel.animate().alpha(0f).setDuration(1000).setListener(object: Animator.AnimatorListener {
-            override fun onAnimationRepeat(animation: Animator?) {
 
-            }
-
-            override fun onAnimationEnd(animation: Animator?) {
+        startAnimation(
+            1000,
+            LinearInterpolator(),
+            {
+                guideLabel.alpha = 1 - it
+            },
+            {
                 guideLabel.visibility = View.GONE
             }
+        )
 
-            override fun onAnimationCancel(animation: Animator?) {
-
-            }
-
-            override fun onAnimationStart(animation: Animator?) {
-
-            }
-        }).start()
     }
 
     private fun showPreviewView() {
 
+        val chooseViewWidth = 600
+        val chooseLayoutParams = chooseView.layoutParams
+
+        startAnimation(
+            2000,
+            LinearInterpolator(),
+            {
+                val alpha = 1 - it
+
+                chooseLayoutParams.width = (chooseViewWidth * it).toInt()
+                chooseView.alpha = it
+                Log.d(TAG, "${chooseLayoutParams.width}")
+
+                flashButton.alpha = alpha
+                flipButton.alpha = alpha
+                captureButton.alpha = alpha
+                exitButton.alpha = alpha
+            },
+            {
+                flashButton.visibility = View.GONE
+                flipButton.visibility = View.GONE
+                captureButton.visibility = View.GONE
+                exitButton.visibility = View.GONE
+            }
+        )
+
         previewView.visibility = View.VISIBLE
+        captureView.visibility = View.GONE
 
     }
 
     private fun hidePreviewView() {
 
+        val chooseViewWidth = 600
+        val chooseLayoutParams = chooseView.layoutParams
+
+        startAnimation(
+            2000,
+            LinearInterpolator(),
+            {
+                val alpha = 1 - it
+
+                chooseLayoutParams.width = (chooseViewWidth * alpha).toInt()
+                chooseView.alpha = alpha
+
+                flashButton.alpha = it
+                flipButton.alpha = it
+                captureButton.alpha = it
+                exitButton.alpha = it
+            }
+        )
+
+        captureView.visibility = View.VISIBLE
+        flashButton.visibility = View.VISIBLE
+        flipButton.visibility = View.VISIBLE
+        captureButton.visibility = View.VISIBLE
+        exitButton.visibility = View.VISIBLE
+
         previewView.visibility = View.GONE
+
         previewView.image = null
         previewView.video = ""
+
+    }
+
+    private fun startAnimation(duration: Long, interpolator: TimeInterpolator, update: (Float) -> Unit, complete: (() -> Unit)? = null) {
+
+        this.activeAnimator?.cancel()
+
+        val animator = ValueAnimator.ofFloat(0f, 1f)
+
+        animator.duration = duration
+        animator.interpolator = interpolator
+        animator.addUpdateListener {
+            update(it.animatedValue as Float)
+        }
+        animator.addListener(object: AnimatorListenerAdapter() {
+            // 动画被取消，onAnimationEnd() 也会被调用
+            override fun onAnimationEnd(animation: android.animation.Animator?) {
+                complete?.invoke()
+                if (animation == activeAnimator) {
+                    activeAnimator = null
+                }
+            }
+        })
+        animator.start()
+
+        this.activeAnimator = animator
 
     }
 

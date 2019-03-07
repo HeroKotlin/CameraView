@@ -79,21 +79,20 @@
             android:visibility="gone"
             tools:text="轻触拍照，按住摄像"/>
 
-    <RelativeLayout
+    <FrameLayout
             android:id="@+id/chooseView"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
             android:layout_alignParentBottom="true"
             android:layout_marginBottom="@dimen/camera_view_capture_button_margin_bottom"
-            android:visibility="gone">
+            android:alpha="0">
 
         <com.github.herokotlin.circleview.CircleView
                 android:id="@+id/cancelButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_alignParentLeft="true"
+                android:layout_gravity="left"
                 app:circle_view_center_image="@drawable/camera_view_cancel"
 
                 app:circle_view_center_color="@color/camera_view_cancel_button_center_color"
@@ -107,8 +106,7 @@
                 android:id="@+id/submitButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_alignParentRight="true"
+                android:layout_gravity="right"
                 app:circle_view_center_image="@drawable/camera_view_submit"
 
                 app:circle_view_center_color="@color/camera_view_submit_button_center_color"
@@ -118,6 +116,6 @@
                 app:circle_view_track_width="0dp"
                 app:circle_view_track_value="0"/>
 
-    </RelativeLayout>
+    </FrameLayout>
 
 </RelativeLayout>
