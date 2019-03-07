@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <dimen name="camera_view_guide_label_text_size">13dp</dimen>
+    <dimen name="camera_view_guide_label_margin_bottom">30dp</dimen>
+
+    <dimen name="camera_view_capture_button_margin_bottom">60dp</dimen>
+    <dimen name="camera_view_capture_button_center_radius_normal">36dp</dimen>
+    <dimen name="camera_view_capture_button_center_radius_recording">24dp</dimen>
+    <dimen name="camera_view_capture_button_ring_width_normal">6dp</dimen>
+    <dimen name="camera_view_capture_button_ring_width_recording">30dp</dimen>
+    <dimen name="camera_view_capture_button_track_width">4dp</dimen>
+
+    <dimen name="camera_view_exit_button_margin_top">20dp</dimen>
+    <dimen name="camera_view_exit_button_margin_right">50dp</dimen>
+    <dimen name="camera_view_exit_button_width">50dp</dimen>
+    <dimen name="camera_view_exit_button_height">44dp</dimen>
+
+    <dimen name="camera_view_flip_button_margin_top">40dp</dimen>
+    <dimen name="camera_view_flip_button_margin_right">20dp</dimen>
+    <dimen name="camera_view_flip_button_width">50dp</dimen>
+    <dimen name="camera_view_flip_button_height">44dp</dimen>
+
+    <dimen name="camera_view_flash_button_margin_right">14dp</dimen>
+    <dimen name="camera_view_flash_button_width">50dp</dimen>
+    <dimen name="camera_view_flash_button_height">44dp</dimen>
+
+</resources>

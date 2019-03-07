@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                xmlns:tools="http://schemas.android.com/tools"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
+
+    <com.wonderkiln.camerakit.CameraView
+            android:id="@+id/camera"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:adjustViewBounds="true"/>
+
+    <ImageButton
+            android:id="@+id/flipButton"
+            android:layout_width="@dimen/camera_view_flip_button_width"
+            android:layout_height="@dimen/camera_view_flip_button_height"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentRight="true"
+            android:layout_marginTop="@dimen/camera_view_flip_button_margin_top"
+            android:layout_marginRight="@dimen/camera_view_flip_button_margin_right"
+            android:src="@drawable/camera_view_camera_flip"
+            android:background="@android:color/transparent"/>
+
+    <ImageButton
+            android:id="@+id/flashButton"
+            android:layout_width="@dimen/camera_view_flash_button_width"
+            android:layout_height="@dimen/camera_view_flash_button_height"
+            android:layout_alignTop="@id/flipButton"
+            android:layout_toLeftOf="@id/flipButton"
+            android:layout_marginRight="@dimen/camera_view_flash_button_margin_right"
+            android:src="@drawable/camera_view_flash_off"
+            android:background="@android:color/transparent"/>
+
+    <com.github.herokotlin.circleview.CircleView
+            android:id="@+id/captureButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="@dimen/camera_view_capture_button_margin_bottom"
+
+            app:circle_view_center_color="@color/camera_view_capture_button_center_color_normal"
+            app:circle_view_center_radius="@dimen/camera_view_capture_button_center_radius_normal"
+
+            app:circle_view_ring_width="@dimen/camera_view_capture_button_ring_width_normal"
+            app:circle_view_ring_color="@color/camera_view_capture_button_ring_color"
+            app:circle_view_track_width="@dimen/camera_view_capture_button_ring_width_normal"
+            app:circle_view_track_value="0"/>
+
+
+    <ImageButton
+            android:id="@+id/exitButton"
+            android:layout_width="@dimen/camera_view_exit_button_width"
+            android:layout_height="@dimen/camera_view_exit_button_height"
+            android:layout_alignTop="@id/captureButton"
+            android:layout_toLeftOf="@id/captureButton"
+            android:layout_marginTop="@dimen/camera_view_exit_button_margin_top"
+            android:layout_marginRight="@dimen/camera_view_exit_button_margin_right"
+            android:src="@drawable/camera_view_exit"
+            android:background="@android:color/transparent"/>
+
+    <TextView
+            android:id="@+id/guideLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_above="@+id/captureButton"
+            android:layout_marginBottom="@dimen/camera_view_guide_label_margin_bottom"
+            android:textSize="@dimen/camera_view_guide_label_text_size"
+            android:textColor="@color/camera_view_guide_label_text_color"
+            android:text="轻触拍照，按住摄像"/>
+
+</RelativeLayout>

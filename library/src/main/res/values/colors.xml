@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="camera_view_guide_label_text_color">#c8c8c8</color>
+    <color name="camera_view_capture_button_center_color_normal">#FFF</color>
+    <color name="camera_view_capture_button_center_color_pressed">#F0F0F0</color>
+    <color name="camera_view_capture_button_ring_color">#e6e6e6e6</color>
+    <color name="camera_view_capture_button_track_color">#1ca30fe6</color>
+</resources>
