@@ -1,39 +1,64 @@
 package com.github.herokotlin.cameraview
 
-import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.TimeInterpolator
 import android.animation.ValueAnimator
 import android.content.Context
+import android.content.pm.PackageManager
+import android.media.MediaMetadataRetriever
 import android.support.v4.content.ContextCompat
 import android.util.AttributeSet
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.animation.LinearInterpolator
-import android.widget.FrameLayout
 import android.widget.RelativeLayout
 import com.github.herokotlin.circleview.CircleView
 import com.github.herokotlin.circleview.CircleViewCallback
 import com.wonderkiln.camerakit.*
 import kotlinx.android.synthetic.main.camera_view.view.*
-import android.media.MediaPlayer
+import android.os.Environment
 import com.github.herokotlin.cameraview.enum.CaptureMode
 import com.github.herokotlin.cameraview.enum.VideoQuality
+import android.graphics.Bitmap
+import java.io.File
+import java.io.FileOutputStream
+import java.text.SimpleDateFormat
+import java.util.*
 
 
 class CameraView: RelativeLayout {
 
     companion object {
         const val TAG = "CameraView"
+        const val PERMISSION_REQUEST_CODE = 987456
     }
 
+    var onExit: (() -> Unit)? = null
+
+    var onCapturePhoto: ((String, Long, Int, Int) -> Unit)? = null
+
+    var onRecordVideo: ((String, Long, Int, String, Long, Int, Int) -> Unit)? = null
+
+    var onPermissionsGranted: (() -> Unit)? = null
+
+    var onPermissionsDenied: (() -> Unit)? = null
+
+    var onCaptureWithoutPermissions: (() -> Unit)? = null
+
+    var onRecordWithoutExternalStorage: (() -> Unit)? = null
+
+    var onRecordDurationLessThanMinDuration: (() -> Unit)? = null
+
     private lateinit var configuration: CameraViewConfiguration
-    private lateinit var callback: CameraViewCallback
 
     private var activeAnimator: ValueAnimator? = null
 
     private var isVideoRecording = false
+
+    private val mediaMetadataRetriever = MediaMetadataRetriever()
+
+    private var videoDuration = 0
 
     private val chooseViewWidth: Int by lazy {
         val radius = resources.getDimensionPixelSize(R.dimen.camera_view_capture_button_center_radius_normal)
@@ -62,17 +87,18 @@ class CameraView: RelativeLayout {
 
                     val videoPath = it.videoFile.absolutePath
 
-                    val mediaPlayer = MediaPlayer()
-                    mediaPlayer.setDataSource(videoPath)
-                    mediaPlayer.prepare()
+                    mediaMetadataRetriever.setDataSource(videoPath)
 
-                    val duration = mediaPlayer.duration
-                    if (duration >= configuration.videoMinDuration) {
-                        showPreviewView()
-                        previewView.video = videoPath
-                    }
-                    else {
-//                        callback.onRecordDurationLessThanMinDuration()
+                    mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION).toIntOrNull()?.let {
+                        videoDuration = it
+
+                        if (it >= configuration.videoMinDuration) {
+                            showPreviewView()
+                            previewView.video = videoPath
+                        }
+                        else {
+                            onRecordDurationLessThanMinDuration?.invoke()
+                        }
                     }
 
                 }
@@ -87,7 +113,7 @@ class CameraView: RelativeLayout {
             override fun onImage(event: CameraKitImage?) {
                 event?.let {
                     showPreviewView()
-                    previewView.image = it.bitmap
+                    previewView.photo = it.bitmap
                 }
             }
 
@@ -159,7 +185,10 @@ class CameraView: RelativeLayout {
                     hidePreviewView()
                 }
                 else if (circleView == submitButton) {
+                    val photo = previewView.photo
+                    val video = previewView.video
                     hidePreviewView()
+                    submit(photo, video)
                 }
 
             }
@@ -170,7 +199,7 @@ class CameraView: RelativeLayout {
         submitButton.callback = circleViewCallback
 
         exitButton.setOnClickListener {
-
+            onExit?.invoke()
         }
 
         flipButton.setOnClickListener {
@@ -179,17 +208,7 @@ class CameraView: RelativeLayout {
 
         flashButton.setOnClickListener {
 
-            captureView.flash = when (captureView.flash) {
-                CameraKit.Constants.FLASH_AUTO -> {
-                    CameraKit.Constants.FLASH_ON
-                }
-                CameraKit.Constants.FLASH_ON -> {
-                    CameraKit.Constants.FLASH_OFF
-                }
-                else -> {
-                    CameraKit.Constants.FLASH_AUTO
-                }
-            }
+            captureView.toggleFlash()
 
             flashButton.setImageResource(
                 when (captureView.flash) {
@@ -240,6 +259,10 @@ class CameraView: RelativeLayout {
             }
         )
 
+        captureView.setVideoBitRate(configuration.videoBitRate)
+
+        captureView.setJpegQuality((configuration.photoQuality * 100).toInt())
+
     }
 
     fun start() {
@@ -250,9 +273,52 @@ class CameraView: RelativeLayout {
         captureView.stop()
     }
 
-    fun startRecordVideo() {
+    fun requestPermissions(): Boolean {
+        return configuration.requestPermissions(
+            listOf(
+                android.Manifest.permission.CAMERA,
+                android.Manifest.permission.RECORD_AUDIO,
+                android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+            ),
+            PERMISSION_REQUEST_CODE
+        )
+    }
+
+    fun requestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+
+        if (requestCode != PERMISSION_REQUEST_CODE) {
+            return
+        }
+
+        for (i in 0 until permissions.size) {
+            if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
+                onPermissionsDenied?.invoke()
+                return
+            }
+        }
+
+        onPermissionsGranted?.invoke()
+
+    }
+
+    private fun checkExternalStorageAvailable(): Boolean {
+        val state = Environment.getExternalStorageState()
+        return state == Environment.MEDIA_MOUNTED
+    }
+
+    private fun startRecordVideo() {
 
         if (isVideoRecording) {
+            return
+        }
+
+        if (!requestPermissions()) {
+            onCaptureWithoutPermissions?.invoke()
+            return
+        }
+
+        if (!checkExternalStorageAvailable()) {
+            onRecordWithoutExternalStorage?.invoke()
             return
         }
 
@@ -279,7 +345,7 @@ class CameraView: RelativeLayout {
 
     }
 
-    fun stopRecordVideo() {
+    private fun stopRecordVideo() {
 
         if (!isVideoRecording) {
             return
@@ -297,8 +363,53 @@ class CameraView: RelativeLayout {
 
     }
 
-    fun capturePhoto() {
+    private fun capturePhoto() {
+
+        if (!requestPermissions()) {
+            onCaptureWithoutPermissions?.invoke()
+            return
+        }
+
+        if (!checkExternalStorageAvailable()) {
+            onRecordWithoutExternalStorage?.invoke()
+            return
+        }
+
         captureView.captureImage()
+
+    }
+
+    private fun submit(photo: Bitmap?, videoPath: String) {
+
+        if (photo != null) {
+            val photoFile = saveToDisk(photo)
+            onCapturePhoto?.invoke(photoFile.absolutePath, photoFile.length(), photo.width, photo.height)
+        }
+        else {
+            val firstFrame = mediaMetadataRetriever.frameAtTime
+            val videoFile = File(videoPath)
+            val photoFile = saveToDisk(firstFrame)
+            onRecordVideo?.invoke(
+                videoFile.absolutePath, videoFile.length(), videoDuration,
+                photoFile.absolutePath, photoFile.length(), firstFrame.width, firstFrame.height
+            )
+        }
+    }
+
+    private fun saveToDisk(bitmap: Bitmap): File {
+
+        val dirname = context.externalCacheDir.absoluteFile
+        val filename = SimpleDateFormat("yyyy_MM_dd_HH_mm_ss", Locale.US).format(Date())
+
+        val file = File("$dirname/$filename.jpg")
+        val outputStream = FileOutputStream(file)
+
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
+        outputStream.flush()
+        outputStream.close()
+
+        return file
+
     }
 
     private fun onGuideLabelFadeOut() {
@@ -377,7 +488,7 @@ class CameraView: RelativeLayout {
 
         previewView.visibility = View.GONE
 
-        previewView.image = null
+        previewView.photo = null
         previewView.video = ""
 
     }

@@ -13,12 +13,9 @@
             app:ckFacing="back"
             app:ckFlash="off"
             app:ckLockVideoAspectRatio="true"
-            app:ckZoom="@android:integer/config_shortAnimTime"
-            app:ckPinchToZoom="true"
             app:ckFocus="tapWithMarker"
             app:ckPermissions="strict"
-            app:ckCropOutput="true"
-            app:ckJpegQuality="100"/>
+            app:ckCropOutput="true"/>
 
     <com.github.herokotlin.cameraview.view.PreviewView
             android:id="@+id/previewView"

@@ -12,7 +12,7 @@ import kotlinx.android.synthetic.main.camera_view_preview_view.view.*
 
 class PreviewView: FrameLayout {
 
-    var image: Bitmap? = null
+    var photo: Bitmap? = null
 
         set(value) {
 

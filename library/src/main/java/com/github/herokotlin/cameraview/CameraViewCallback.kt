@@ -6,13 +6,17 @@ interface CameraViewCallback {
 
     fun onExit(activity: Activity)
 
-    // 拉取文件数据时，发现没权限
+    fun onCapturePhoto(activity: Activity, photoPath: String, photoSize: Long, photoWidth: Int, photoHeight: Int)
+
+    fun onRecordVideo(activity: Activity, videoPath: String, videoSize: Long, videoDuration: Int, photoPath: String, photoSize: Long, photoWidth: Int, photoHeight: Int)
+
+    // 拍摄照片或视频时，发现没权限
     fun onCaptureWithoutPermissions(activity: Activity) {
 
     }
 
     // 录制视频时间太短
-    fun onRecordDurationLessThanMinDuration() {
+    fun onRecordDurationLessThanMinDuration(activity: Activity) {
 
     }
 
