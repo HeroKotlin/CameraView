@@ -20,6 +20,6 @@ abstract class CameraViewConfiguration {
     var videoMaxDuration = 10000L
 
     // 拍摄模式
-    var captureMode = CaptureMode.PHOTO
+    var captureMode = CaptureMode.PHOTO_VIDEO
 
 }
