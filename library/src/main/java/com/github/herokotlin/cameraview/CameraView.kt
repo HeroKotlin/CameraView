@@ -18,6 +18,7 @@ import com.github.herokotlin.circleview.CircleViewCallback
 import com.wonderkiln.camerakit.*
 import kotlinx.android.synthetic.main.camera_view.view.*
 import android.media.MediaPlayer
+import com.github.herokotlin.cameraview.enum.CaptureMode
 import com.github.herokotlin.cameraview.enum.VideoQuality
 
 
@@ -31,6 +32,8 @@ class CameraView: RelativeLayout {
     private lateinit var callback: CameraViewCallback
 
     private var activeAnimator: ValueAnimator? = null
+
+    private var isVideoRecording = false
 
     private val chooseViewWidth: Int by lazy {
         val radius = resources.getDimensionPixelSize(R.dimen.camera_view_capture_button_center_radius_normal)
@@ -103,7 +106,7 @@ class CameraView: RelativeLayout {
             }
 
             override fun onLongPressStart(circleView: CircleView) {
-                if (circleView == captureButton) {
+                if (circleView == captureButton && configuration.captureMode != CaptureMode.PHOTO) {
                     startRecordVideo()
                 }
             }
@@ -147,7 +150,10 @@ class CameraView: RelativeLayout {
                 }
 
                 if (circleView == captureButton) {
-                    capturePhoto()
+                    // 纯视频拍摄需要长按
+                    if (configuration.captureMode != CaptureMode.VIDEO) {
+                        capturePhoto()
+                    }
                 }
                 else if (circleView == cancelButton) {
                     hidePreviewView()
@@ -246,6 +252,10 @@ class CameraView: RelativeLayout {
 
     fun startRecordVideo() {
 
+        if (isVideoRecording) {
+            return
+        }
+
         captureView.captureVideo()
 
         captureButton.centerRadius = resources.getDimensionPixelSize(R.dimen.camera_view_capture_button_center_radius_recording)
@@ -264,9 +274,16 @@ class CameraView: RelativeLayout {
                 stopRecordVideo()
             }
         )
+
+        isVideoRecording = true
+
     }
 
     fun stopRecordVideo() {
+
+        if (!isVideoRecording) {
+            return
+        }
 
         captureButton.centerRadius = resources.getDimensionPixelSize(R.dimen.camera_view_capture_button_center_radius_normal)
         captureButton.ringWidth = resources.getDimensionPixelSize(R.dimen.camera_view_capture_button_ring_width_normal)
@@ -275,6 +292,8 @@ class CameraView: RelativeLayout {
 
         captureView.stopVideo()
         activeAnimator?.cancel()
+
+        isVideoRecording = false
 
     }
 

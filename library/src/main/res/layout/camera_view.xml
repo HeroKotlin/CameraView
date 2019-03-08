@@ -12,6 +12,8 @@
             android:adjustViewBounds="true"
             app:ckFacing="back"
             app:ckFlash="off"
+            app:ckZoom="@android:integer/config_shortAnimTime"
+            app:ckPinchToZoom="true"
             app:ckFocus="tapWithMarker"
             app:ckPermissions="strict"
             app:ckCropOutput="true"
