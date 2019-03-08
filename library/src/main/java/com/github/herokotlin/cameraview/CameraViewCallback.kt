@@ -11,8 +11,13 @@ interface CameraViewCallback {
 
     }
 
+    // 录制视频时间太短
+    fun onRecordDurationLessThanMinDuration() {
+
+    }
+
     // 没有外部存储可用
-    fun onFetchWithoutExternalStorage(activity: Activity) {
+    fun onCaptureWithoutExternalStorage(activity: Activity) {
 
     }
 

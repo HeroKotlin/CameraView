@@ -17,6 +17,8 @@ import com.github.herokotlin.circleview.CircleView
 import com.github.herokotlin.circleview.CircleViewCallback
 import com.wonderkiln.camerakit.*
 import kotlinx.android.synthetic.main.camera_view.view.*
+import android.media.MediaPlayer
+import com.github.herokotlin.cameraview.enum.VideoQuality
 
 
 class CameraView: RelativeLayout {
@@ -26,6 +28,7 @@ class CameraView: RelativeLayout {
     }
 
     private lateinit var configuration: CameraViewConfiguration
+    private lateinit var callback: CameraViewCallback
 
     private var activeAnimator: ValueAnimator? = null
 
@@ -53,8 +56,22 @@ class CameraView: RelativeLayout {
         captureView.addCameraKitListener(object: CameraKitEventListener {
             override fun onVideo(event: CameraKitVideo?) {
                 event?.let {
-                    showPreviewView()
-                    previewView.video = it.videoFile.absolutePath
+
+                    val videoPath = it.videoFile.absolutePath
+
+                    val mediaPlayer = MediaPlayer()
+                    mediaPlayer.setDataSource(videoPath)
+                    mediaPlayer.prepare()
+
+                    val duration = mediaPlayer.duration
+                    if (duration >= configuration.videoMinDuration) {
+                        showPreviewView()
+                        previewView.video = videoPath
+                    }
+                    else {
+                        callback.onRecordDurationLessThanMinDuration()
+                    }
+
                 }
             }
 
@@ -62,7 +79,6 @@ class CameraView: RelativeLayout {
                 if (event == null) {
                     return
                 }
-
             }
 
             override fun onImage(event: CameraKitImage?) {
@@ -201,6 +217,23 @@ class CameraView: RelativeLayout {
             }
         }
 
+        captureView.setVideoQuality(
+            when (configuration.videoQuality) {
+                VideoQuality.P720 -> {
+                    CameraKit.Constants.VIDEO_QUALITY_720P
+                }
+                VideoQuality.P1080 -> {
+                    CameraKit.Constants.VIDEO_QUALITY_1080P
+                }
+                VideoQuality.P2160 -> {
+                    CameraKit.Constants.VIDEO_QUALITY_2160P
+                }
+                else -> {
+                    CameraKit.Constants.VIDEO_QUALITY_480P
+                }
+            }
+        )
+
     }
 
     fun start() {
@@ -212,7 +245,13 @@ class CameraView: RelativeLayout {
     }
 
     fun startRecordVideo() {
+
         captureView.captureVideo()
+
+        captureButton.centerRadius = resources.getDimensionPixelSize(R.dimen.camera_view_capture_button_center_radius_recording)
+        captureButton.ringWidth = resources.getDimensionPixelSize(R.dimen.camera_view_capture_button_ring_width_recording)
+        captureButton.requestLayout()
+
         startAnimation(
             configuration.videoMaxDuration,
             LinearInterpolator(),
@@ -222,15 +261,21 @@ class CameraView: RelativeLayout {
                 captureButton.invalidate()
             },
             {
-                captureButton.trackValue = 0f
-                captureView.stopVideo()
+                stopRecordVideo()
             }
         )
     }
 
     fun stopRecordVideo() {
+
+        captureButton.centerRadius = resources.getDimensionPixelSize(R.dimen.camera_view_capture_button_center_radius_normal)
+        captureButton.ringWidth = resources.getDimensionPixelSize(R.dimen.camera_view_capture_button_ring_width_normal)
+        captureButton.trackValue = 0f
+        captureButton.requestLayout()
+
         captureView.stopVideo()
         activeAnimator?.cancel()
+
     }
 
     fun capturePhoto() {

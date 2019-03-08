@@ -11,7 +11,6 @@
     <dimen name="camera_view_capture_button_ring_width_recording">30dp</dimen>
     <dimen name="camera_view_capture_button_track_width">4dp</dimen>
 
-    <dimen name="camera_view_exit_button_margin_top">20dp</dimen>
     <dimen name="camera_view_exit_button_margin_right">50dp</dimen>
     <dimen name="camera_view_exit_button_width">50dp</dimen>
     <dimen name="camera_view_exit_button_height">44dp</dimen>
