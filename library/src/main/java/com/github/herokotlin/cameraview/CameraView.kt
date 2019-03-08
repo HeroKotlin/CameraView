@@ -89,17 +89,19 @@ class CameraView: RelativeLayout {
 
                     mediaMetadataRetriever.setDataSource(videoPath)
 
-                    mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION).toIntOrNull()?.let {
-                        videoDuration = it
+                    val duration = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION).toIntOrNull()
+                    if (duration != null) {
+                        videoDuration = duration
 
-                        if (it >= configuration.videoMinDuration) {
+                        if (duration >= configuration.videoMinDuration) {
                             showPreviewView()
                             previewView.video = videoPath
+                            return
                         }
-                        else {
-                            onRecordDurationLessThanMinDuration?.invoke()
-                        }
+                        onRecordDurationLessThanMinDuration?.invoke()
                     }
+
+                    showControls()
 
                 }
             }
@@ -119,6 +121,9 @@ class CameraView: RelativeLayout {
 
             override fun onError(event: CameraKitError?) {
                 event?.let {
+                    if (isVideoRecording) {
+                        showControls()
+                    }
                     Log.e(TAG, "${it.exception}")
                 }
             }
@@ -342,6 +347,7 @@ class CameraView: RelativeLayout {
         )
 
         isVideoRecording = true
+        hideControls()
 
     }
 
@@ -443,14 +449,14 @@ class CameraView: RelativeLayout {
 
                 flashButton.alpha = alpha
                 flipButton.alpha = alpha
-                captureButton.alpha = alpha
                 exitButton.alpha = alpha
+                captureButton.alpha = alpha
             },
             {
                 flashButton.visibility = View.GONE
                 flipButton.visibility = View.GONE
-                captureButton.visibility = View.GONE
                 exitButton.visibility = View.GONE
+                captureButton.visibility = View.GONE
             }
         )
 
@@ -475,22 +481,34 @@ class CameraView: RelativeLayout {
 
                 flashButton.alpha = it
                 flipButton.alpha = it
-                captureButton.alpha = it
                 exitButton.alpha = it
+                captureButton.alpha = it
             }
         )
 
         captureView.visibility = View.VISIBLE
         flashButton.visibility = View.VISIBLE
         flipButton.visibility = View.VISIBLE
-        captureButton.visibility = View.VISIBLE
         exitButton.visibility = View.VISIBLE
+        captureButton.visibility = View.VISIBLE
 
         previewView.visibility = View.GONE
 
         previewView.photo = null
         previewView.video = ""
 
+    }
+
+    private fun showControls() {
+        flipButton.visibility = View.VISIBLE
+        flashButton.visibility = View.VISIBLE
+        exitButton.visibility = View.VISIBLE
+    }
+
+    private fun hideControls() {
+        flipButton.visibility = View.GONE
+        flashButton.visibility = View.GONE
+        exitButton.visibility = View.GONE
     }
 
     private fun startAnimation(duration: Long, interpolator: TimeInterpolator, update: (Float) -> Unit, complete: (() -> Unit)? = null) {
