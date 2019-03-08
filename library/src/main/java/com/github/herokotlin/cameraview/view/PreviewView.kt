@@ -72,10 +72,10 @@ class PreviewView: FrameLayout {
             it.isLooping = true
             it.start()
 
-            val ratio = videoView.width / it.videoWidth
+            val ratio = videoView.width.toFloat() / it.videoWidth
 
             // 按比例缩放
-            videoView.layoutParams.height = it.videoHeight * ratio
+            videoView.layoutParams.height = (it.videoHeight * ratio).toInt()
 
         }
     }

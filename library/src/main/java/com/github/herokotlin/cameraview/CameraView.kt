@@ -69,7 +69,7 @@ class CameraView: RelativeLayout {
                         previewView.video = videoPath
                     }
                     else {
-                        callback.onRecordDurationLessThanMinDuration()
+//                        callback.onRecordDurationLessThanMinDuration()
                     }
 
                 }
