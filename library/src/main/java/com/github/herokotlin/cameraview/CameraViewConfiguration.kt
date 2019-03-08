@@ -14,9 +14,9 @@ abstract class CameraViewConfiguration {
     val photoQuality = 0.7f
 
     // 视频质量
-    var videoQuality = VideoQuality.P480
+    var videoQuality = VideoQuality.P720
 
-    var videoBitRate = 10
+    var videoBitRate = 0
 
     // 视频最短录制时长，单位是毫秒
     var videoMinDuration = 1000L
