@@ -1,8 +1,10 @@
 package com.github.herokotlin.cameraview
 
+import android.Manifest
 import android.animation.AnimatorListenerAdapter
 import android.animation.TimeInterpolator
 import android.animation.ValueAnimator
+import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
 import android.media.MediaMetadataRetriever
@@ -21,17 +23,16 @@ import android.os.Environment
 import com.github.herokotlin.cameraview.enum.CaptureMode
 import com.github.herokotlin.cameraview.enum.VideoQuality
 import android.graphics.Bitmap
+import com.github.herokotlin.permission.Permission
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.*
 
-
 class CameraView: RelativeLayout {
 
     companion object {
         const val TAG = "CameraView"
-        const val PERMISSION_REQUEST_CODE = 987456
     }
 
     var onExit: (() -> Unit)? = null
@@ -40,15 +41,16 @@ class CameraView: RelativeLayout {
 
     var onRecordVideo: ((String, Long, Int, String, Long, Int, Int) -> Unit)? = null
 
-    var onPermissionsGranted: (() -> Unit)? = null
-
-    var onPermissionsDenied: (() -> Unit)? = null
-
-    var onCaptureWithoutPermissions: (() -> Unit)? = null
-
-    var onRecordWithoutExternalStorage: (() -> Unit)? = null
-
     var onRecordDurationLessThanMinDuration: (() -> Unit)? = null
+
+    val permission = Permission(89190906, listOf(
+        Manifest.permission.WRITE_EXTERNAL_STORAGE,
+        Manifest.permission.RECORD_AUDIO,
+        Manifest.permission.CAMERA
+    ))
+
+    // 用于请求权限
+    var activity: Activity? = null
 
     private lateinit var configuration: CameraViewConfiguration
 
@@ -279,36 +281,12 @@ class CameraView: RelativeLayout {
     }
 
     fun requestPermissions(): Boolean {
-        return configuration.requestPermissions(
-            listOf(
-                android.Manifest.permission.CAMERA,
-                android.Manifest.permission.RECORD_AUDIO,
-                android.Manifest.permission.WRITE_EXTERNAL_STORAGE
-            ),
-            PERMISSION_REQUEST_CODE
-        )
+        val context = activity ?: (context as Activity)
+        return permission.requestPermissions(context)
     }
 
-    fun requestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-
-        if (requestCode != PERMISSION_REQUEST_CODE) {
-            return
-        }
-
-        for (i in 0 until permissions.size) {
-            if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
-                onPermissionsDenied?.invoke()
-                return
-            }
-        }
-
-        onPermissionsGranted?.invoke()
-
-    }
-
-    private fun checkExternalStorageAvailable(): Boolean {
-        val state = Environment.getExternalStorageState()
-        return state == Environment.MEDIA_MOUNTED
+    fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        permission.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
     private fun startRecordVideo() {
@@ -318,12 +296,10 @@ class CameraView: RelativeLayout {
         }
 
         if (!requestPermissions()) {
-            onCaptureWithoutPermissions?.invoke()
             return
         }
 
-        if (!checkExternalStorageAvailable()) {
-            onRecordWithoutExternalStorage?.invoke()
+        if (!permission.checkExternalStorageWritable()) {
             return
         }
 
@@ -372,12 +348,10 @@ class CameraView: RelativeLayout {
     private fun capturePhoto() {
 
         if (!requestPermissions()) {
-            onCaptureWithoutPermissions?.invoke()
             return
         }
 
-        if (!checkExternalStorageAvailable()) {
-            onRecordWithoutExternalStorage?.invoke()
+        if (!permission.checkExternalStorageWritable()) {
             return
         }
 

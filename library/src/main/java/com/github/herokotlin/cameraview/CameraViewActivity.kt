@@ -38,6 +38,7 @@ class CameraViewActivity: AppCompatActivity() {
 
         cameraView.init(configuration)
 
+        cameraView.activity = this
         cameraView.onExit = {
             callback.onExit(this)
         }
@@ -47,32 +48,32 @@ class CameraViewActivity: AppCompatActivity() {
         cameraView.onRecordVideo = { videoPath, videoSize, videoDuration, photoPath, photoSize, photoWidth, photoHeight ->
             callback.onRecordVideo(this, videoPath, videoSize, videoDuration, photoPath, photoSize, photoWidth, photoHeight)
         }
-        cameraView.onPermissionsGranted = {
-            cameraView.start()
-            callback.onPermissionsGranted(this)
-        }
-        cameraView.onPermissionsDenied = {
-            callback.onPermissionsDenied(this)
-        }
-        cameraView.onRecordWithoutExternalStorage = {
-            callback.onCaptureWithoutExternalStorage(this)
-        }
-        cameraView.onCaptureWithoutPermissions = {
-            callback.onCaptureWithoutPermissions(this)
-        }
         cameraView.onRecordDurationLessThanMinDuration = {
             callback.onRecordDurationLessThanMinDuration(this)
         }
 
-        if (cameraView.requestPermissions()) {
+        val permission = cameraView.permission
+        permission.onPermissionsGranted = {
             cameraView.start()
+            callback.onPermissionsGranted(this)
+        }
+        permission.onPermissionsDenied = {
+            callback.onPermissionsDenied(this)
+        }
+        permission.onExternalStorageNotWritable = {
+            callback.onExternalStorageNotWritable(this)
+        }
+        permission.onPermissionsNotGranted = {
+            callback.onPermissionsNotGranted(this)
         }
 
     }
 
     override fun onResume() {
         super.onResume()
-        cameraView.start()
+        if (cameraView.requestPermissions()) {
+            cameraView.start()
+        }
     }
 
     override fun onPause() {
@@ -82,7 +83,7 @@ class CameraViewActivity: AppCompatActivity() {
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        cameraView.requestPermissionsResult(requestCode, permissions, grantResults)
+        cameraView.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
 }

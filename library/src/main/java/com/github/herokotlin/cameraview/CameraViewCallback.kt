@@ -11,7 +11,7 @@ interface CameraViewCallback {
     fun onRecordVideo(activity: Activity, videoPath: String, videoSize: Long, videoDuration: Int, photoPath: String, photoSize: Long, photoWidth: Int, photoHeight: Int)
 
     // 拍摄照片或视频时，发现没权限
-    fun onCaptureWithoutPermissions(activity: Activity) {
+    fun onPermissionsNotGranted(activity: Activity) {
 
     }
 
@@ -21,7 +21,7 @@ interface CameraViewCallback {
     }
 
     // 没有外部存储可用
-    fun onCaptureWithoutExternalStorage(activity: Activity) {
+    fun onExternalStorageNotWritable(activity: Activity) {
 
     }
 
