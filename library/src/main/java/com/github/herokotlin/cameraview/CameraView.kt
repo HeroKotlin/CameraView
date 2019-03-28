@@ -43,7 +43,7 @@ class CameraView: RelativeLayout {
 
     var onRecordDurationLessThanMinDuration: (() -> Unit)? = null
 
-    val permission = Permission(190906, listOf(
+    val permission = Permission(19906, listOf(
         Manifest.permission.WRITE_EXTERNAL_STORAGE,
         Manifest.permission.RECORD_AUDIO,
         Manifest.permission.CAMERA
