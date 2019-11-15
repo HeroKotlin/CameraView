@@ -6,9 +6,8 @@ import android.animation.TimeInterpolator
 import android.animation.ValueAnimator
 import android.app.Activity
 import android.content.Context
-import android.content.pm.PackageManager
 import android.media.MediaMetadataRetriever
-import android.support.v4.content.ContextCompat
+import androidx.core.content.ContextCompat
 import android.util.AttributeSet
 import android.util.Log
 import android.view.LayoutInflater
@@ -19,7 +18,6 @@ import com.github.herokotlin.circleview.CircleView
 import com.github.herokotlin.circleview.CircleViewCallback
 import com.wonderkiln.camerakit.*
 import kotlinx.android.synthetic.main.camera_view.view.*
-import android.os.Environment
 import com.github.herokotlin.cameraview.enum.CaptureMode
 import com.github.herokotlin.cameraview.enum.VideoQuality
 import android.graphics.Bitmap
@@ -378,7 +376,7 @@ class CameraView: RelativeLayout {
 
     private fun saveToDisk(bitmap: Bitmap): File {
 
-        val dirname = context.externalCacheDir.absoluteFile
+        val dirname = context.externalCacheDir.absoluteFile.absolutePath
         val filename = SimpleDateFormat("yyyy_MM_dd_HH_mm_ss", Locale.US).format(Date())
 
         val file = File("$dirname/$filename.jpg")
