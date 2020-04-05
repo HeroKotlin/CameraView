@@ -102,11 +102,9 @@ class CameraView: RelativeLayout {
             }
 
             override fun onVideoTaken(result: VideoResult) {
-
                 super.onVideoTaken(result)
 
                 val videoPath = result.file.absolutePath
-
                 mediaMetadataRetriever.setDataSource(videoPath)
 
                 val duration = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION).toIntOrNull()
@@ -137,15 +135,16 @@ class CameraView: RelativeLayout {
         })
 
         val circleViewCallback = object: CircleViewCallback {
-            override fun onLongPressEnd(circleView: CircleView) {
-                if (circleView == captureButton) {
-                    stopRecordVideo()
-                }
-            }
 
             override fun onLongPressStart(circleView: CircleView) {
                 if (circleView == captureButton && configuration.captureMode != CaptureMode.PHOTO) {
                     startRecordVideo()
+                }
+            }
+
+            override fun onLongPressEnd(circleView: CircleView) {
+                if (circleView == captureButton) {
+                    stopRecordVideo()
                 }
             }
 
@@ -175,12 +174,10 @@ class CameraView: RelativeLayout {
 
             override fun onTouchUp(circleView: CircleView, inside: Boolean, isLongPress: Boolean) {
 
-                if (inside) {
-                    if (circleView == captureButton) {
-                        circleView.centerColor =
-                            ContextCompat.getColor(context, R.color.camera_view_capture_button_center_color_normal)
-                        circleView.invalidate()
-                    }
+                if (inside && circleView == captureButton) {
+                    circleView.centerColor =
+                        ContextCompat.getColor(context, R.color.camera_view_capture_button_center_color_normal)
+                    circleView.invalidate()
                 }
 
                 if (!inside || isLongPress) {
@@ -331,6 +328,10 @@ class CameraView: RelativeLayout {
             return
         }
 
+        // 把这个放前面，因为取消动画也会走进这里
+        // 这时要直接返回
+        isVideoRecording = false
+
         captureButton.centerRadius = resources.getDimensionPixelSize(R.dimen.camera_view_capture_button_center_radius_normal)
         captureButton.ringWidth = resources.getDimensionPixelSize(R.dimen.camera_view_capture_button_ring_width_normal)
         captureButton.trackValue = 0f
@@ -338,8 +339,6 @@ class CameraView: RelativeLayout {
 
         captureView.stopVideo()
         activeAnimator?.cancel()
-
-        isVideoRecording = false
 
     }
 
@@ -365,13 +364,14 @@ class CameraView: RelativeLayout {
             onCapturePhoto?.invoke(photoFile.absolutePath, photoFile.length(), photo.width, photo.height)
         }
         else {
-            val firstFrame = mediaMetadataRetriever.frameAtTime
-            val videoFile = File(videoPath)
-            val photoFile = saveToDisk(firstFrame)
-            onRecordVideo?.invoke(
-                videoFile.absolutePath, videoFile.length(), videoDuration,
-                photoFile.absolutePath, photoFile.length(), firstFrame.width, firstFrame.height
-            )
+            mediaMetadataRetriever.frameAtTime?.let {
+                val videoFile = File(videoPath)
+                val photoFile = saveToDisk(it)
+                onRecordVideo?.invoke(
+                    videoFile.absolutePath, videoFile.length(), videoDuration,
+                    photoFile.absolutePath, photoFile.length(), it.width, it.height
+                )
+            }
         }
     }
 

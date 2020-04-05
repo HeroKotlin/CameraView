@@ -68,15 +68,8 @@ class PreviewView: FrameLayout {
         LayoutInflater.from(context).inflate(R.layout.camera_view_preview_view, this)
 
         videoView.setOnPreparedListener {
-
             it.isLooping = true
             it.start()
-
-            val ratio = videoView.width.toFloat() / it.videoWidth
-
-            // 按比例缩放
-            videoView.layoutParams.height = (it.videoHeight * ratio).toInt()
-
         }
     }
 
