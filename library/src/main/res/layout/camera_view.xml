@@ -5,17 +5,10 @@
               android:layout_width="match_parent"
               android:layout_height="match_parent">
 
-    <com.wonderkiln.camerakit.CameraView
+    <com.otaliastudios.cameraview.CameraView
             android:id="@+id/captureView"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:adjustViewBounds="true"
-            app:ckFacing="back"
-            app:ckFlash="off"
-            app:ckLockVideoAspectRatio="true"
-            app:ckFocus="tapWithMarker"
-            app:ckPermissions="strict"
-            app:ckCropOutput="true"/>
+            android:layout_height="match_parent"/>
 
     <com.github.herokotlin.cameraview.view.PreviewView
             android:id="@+id/previewView"

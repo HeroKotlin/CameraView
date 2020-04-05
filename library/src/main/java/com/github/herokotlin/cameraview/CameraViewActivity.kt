@@ -54,7 +54,7 @@ class CameraViewActivity: AppCompatActivity() {
 
         val permission = cameraView.permission
         permission.onPermissionsGranted = {
-            cameraView.start()
+            cameraView.open()
             callback.onPermissionsGranted(this)
         }
         permission.onPermissionsDenied = {
@@ -72,13 +72,18 @@ class CameraViewActivity: AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         if (cameraView.requestPermissions()) {
-            cameraView.start()
+            cameraView.open()
         }
     }
 
     override fun onPause() {
         super.onPause()
-        cameraView.stop()
+        cameraView.close()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        cameraView.destroy()
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {

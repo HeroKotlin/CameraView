@@ -6,22 +6,29 @@ import android.animation.TimeInterpolator
 import android.animation.ValueAnimator
 import android.app.Activity
 import android.content.Context
+import android.graphics.Bitmap
 import android.media.MediaMetadataRetriever
-import androidx.core.content.ContextCompat
 import android.util.AttributeSet
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.animation.LinearInterpolator
 import android.widget.RelativeLayout
+import androidx.core.content.ContextCompat
+import com.github.herokotlin.cameraview.enum.CaptureMode
 import com.github.herokotlin.circleview.CircleView
 import com.github.herokotlin.circleview.CircleViewCallback
-import com.wonderkiln.camerakit.*
-import kotlinx.android.synthetic.main.camera_view.view.*
-import com.github.herokotlin.cameraview.enum.CaptureMode
-import com.github.herokotlin.cameraview.enum.VideoQuality
-import android.graphics.Bitmap
 import com.github.herokotlin.permission.Permission
+import com.otaliastudios.cameraview.CameraException
+import com.otaliastudios.cameraview.CameraListener
+import com.otaliastudios.cameraview.PictureResult
+import com.otaliastudios.cameraview.VideoResult
+import com.otaliastudios.cameraview.controls.Flash
+import com.otaliastudios.cameraview.controls.Mode
+import com.otaliastudios.cameraview.controls.PictureFormat
+import com.otaliastudios.cameraview.gesture.Gesture
+import com.otaliastudios.cameraview.gesture.GestureAction
+import kotlinx.android.synthetic.main.camera_view.view.*
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
@@ -81,51 +88,51 @@ class CameraView: RelativeLayout {
 
         LayoutInflater.from(context).inflate(R.layout.camera_view, this)
 
-        captureView.addCameraKitListener(object: CameraKitEventListener {
-            override fun onVideo(event: CameraKitVideo?) {
-                event?.let {
+        captureView.addCameraListener(object: CameraListener() {
+            override fun onPictureTaken(result: PictureResult) {
+                super.onPictureTaken(result)
 
-                    val videoPath = it.videoFile.absolutePath
-
-                    mediaMetadataRetriever.setDataSource(videoPath)
-
-                    val duration = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION).toIntOrNull()
-                    if (duration != null) {
-                        videoDuration = duration
-
-                        if (duration >= configuration.videoMinDuration) {
-                            showPreviewView()
-                            previewView.video = videoPath
-                            return
-                        }
-                        onRecordDurationLessThanMinDuration?.invoke()
+                result.toBitmap {
+                    if (it != null) {
+                        showPreviewView()
+                        previewView.photo = it
                     }
+                }
 
+            }
+
+            override fun onVideoTaken(result: VideoResult) {
+
+                super.onVideoTaken(result)
+
+                val videoPath = result.file.absolutePath
+
+                mediaMetadataRetriever.setDataSource(videoPath)
+
+                val duration = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION).toIntOrNull()
+                if (duration != null) {
+                    videoDuration = duration
+
+                    if (duration >= configuration.videoMinDuration) {
+                        showPreviewView()
+                        previewView.video = videoPath
+                        return
+                    }
+                    onRecordDurationLessThanMinDuration?.invoke()
+                }
+
+                showControls()
+
+            }
+
+            override fun onCameraError(exception: CameraException) {
+                super.onCameraError(exception)
+
+                if (isVideoRecording) {
                     showControls()
-
                 }
-            }
+                Log.e(TAG, exception.localizedMessage)
 
-            override fun onEvent(event: CameraKitEvent?) {
-                if (event == null) {
-                    return
-                }
-            }
-
-            override fun onImage(event: CameraKitImage?) {
-                event?.let {
-                    showPreviewView()
-                    previewView.photo = it.bitmap
-                }
-            }
-
-            override fun onError(event: CameraKitError?) {
-                event?.let {
-                    if (isVideoRecording) {
-                        showControls()
-                    }
-                    Log.e(TAG, "${it.exception}")
-                }
             }
         })
 
@@ -213,21 +220,20 @@ class CameraView: RelativeLayout {
 
         flashButton.setOnClickListener {
 
-            captureView.toggleFlash()
-
-            flashButton.setImageResource(
-                when (captureView.flash) {
-                    CameraKit.Constants.FLASH_AUTO -> {
-                        R.drawable.camera_view_flash_auto
-                    }
-                    CameraKit.Constants.FLASH_ON -> {
-                        R.drawable.camera_view_flash_on
-                    }
-                    else -> {
-                        R.drawable.camera_view_flash_off
-                    }
+            when (captureView.flash) {
+                Flash.AUTO -> {
+                    captureView.flash = Flash.ON
+                    flashButton.setImageResource(R.drawable.camera_view_flash_auto)
                 }
-            )
+                Flash.ON -> {
+                    captureView.flash = Flash.OFF
+                    flashButton.setImageResource(R.drawable.camera_view_flash_on)
+                }
+                else -> {
+                    captureView.flash = Flash.AUTO
+                    flashButton.setImageResource(R.drawable.camera_view_flash_off)
+                }
+            }
 
         }
 
@@ -247,35 +253,26 @@ class CameraView: RelativeLayout {
             }
         }
 
-        captureView.setVideoQuality(
-            when (configuration.videoQuality) {
-                VideoQuality.P720 -> {
-                    CameraKit.Constants.VIDEO_QUALITY_720P
-                }
-                VideoQuality.P1080 -> {
-                    CameraKit.Constants.VIDEO_QUALITY_1080P
-                }
-                VideoQuality.P2160 -> {
-                    CameraKit.Constants.VIDEO_QUALITY_2160P
-                }
-                else -> {
-                    CameraKit.Constants.VIDEO_QUALITY_480P
-                }
-            }
-        )
+        captureView.mapGesture(Gesture.PINCH, GestureAction.ZOOM)
+        captureView.mapGesture(Gesture.TAP, GestureAction.AUTO_FOCUS)
 
-        captureView.setVideoBitRate(configuration.videoBitRate)
+        captureView.videoBitRate = configuration.videoBitRate
+        captureView.audioBitRate = configuration.audioBitRate
 
-        captureView.setJpegQuality((configuration.photoQuality * 100).toInt())
+        captureView.pictureFormat = PictureFormat.JPEG
 
     }
 
-    fun start() {
-        captureView.start()
+    fun open() {
+        captureView.open()
     }
 
-    fun stop() {
-        captureView.stop()
+    fun close() {
+        captureView.close()
+    }
+
+    fun destroy() {
+        captureView.destroy()
     }
 
     fun requestPermissions(): Boolean {
@@ -301,7 +298,10 @@ class CameraView: RelativeLayout {
             return
         }
 
-        captureView.captureVideo()
+        captureView.mode = Mode.VIDEO
+        captureView.takeVideoSnapshot(
+            File(getFilePath(".mp4"))
+        )
 
         captureButton.centerRadius = resources.getDimensionPixelSize(R.dimen.camera_view_capture_button_center_radius_recording)
         captureButton.ringWidth = resources.getDimensionPixelSize(R.dimen.camera_view_capture_button_ring_width_recording)
@@ -353,7 +353,8 @@ class CameraView: RelativeLayout {
             return
         }
 
-        captureView.captureImage()
+        captureView.mode = Mode.PICTURE
+        captureView.takePictureSnapshot()
 
     }
 
@@ -376,10 +377,7 @@ class CameraView: RelativeLayout {
 
     private fun saveToDisk(bitmap: Bitmap): File {
 
-        val dirname = context.externalCacheDir.absoluteFile.absolutePath
-        val filename = SimpleDateFormat("yyyy_MM_dd_HH_mm_ss", Locale.US).format(Date())
-
-        val file = File("$dirname/$filename.jpg")
+        val file = File(getFilePath(".jpg"))
         val outputStream = FileOutputStream(file)
 
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
@@ -388,6 +386,12 @@ class CameraView: RelativeLayout {
 
         return file
 
+    }
+
+    private fun getFilePath(extname: String): String {
+        val dirname = context.externalCacheDir.absoluteFile.absolutePath
+        val filename = SimpleDateFormat("yyyy_MM_dd_HH_mm_ss", Locale.US).format(Date())
+        return "$dirname/$filename$extname"
     }
 
     private fun onGuideLabelFadeOut() {
