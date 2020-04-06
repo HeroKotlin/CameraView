@@ -10,28 +10,8 @@ interface CameraViewCallback {
 
     fun onRecordVideo(activity: Activity, videoPath: String, videoSize: Long, videoDuration: Int, photoPath: String, photoSize: Long, photoWidth: Int, photoHeight: Int)
 
-    // 拍摄照片或视频时，发现没权限
-    fun onPermissionsNotGranted(activity: Activity) {
-
-    }
-
     // 录制视频时间太短
     fun onRecordDurationLessThanMinDuration(activity: Activity) {
-
-    }
-
-    // 没有外部存储可用
-    fun onExternalStorageNotWritable(activity: Activity) {
-
-    }
-
-    // 用户点击同意授权
-    fun onPermissionsGranted(activity: Activity) {
-
-    }
-
-    // 用户点击拒绝授权
-    fun onPermissionsDenied(activity: Activity) {
 
     }
 

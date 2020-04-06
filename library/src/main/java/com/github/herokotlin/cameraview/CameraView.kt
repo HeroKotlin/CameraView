@@ -18,7 +18,6 @@ import androidx.core.content.ContextCompat
 import com.github.herokotlin.cameraview.enum.CaptureMode
 import com.github.herokotlin.circleview.CircleView
 import com.github.herokotlin.circleview.CircleViewCallback
-import com.github.herokotlin.permission.Permission
 import com.otaliastudios.cameraview.CameraException
 import com.otaliastudios.cameraview.CameraListener
 import com.otaliastudios.cameraview.PictureResult
@@ -47,12 +46,6 @@ class CameraView: RelativeLayout {
     var onRecordVideo: ((String, Long, Int, String, Long, Int, Int) -> Unit)? = null
 
     var onRecordDurationLessThanMinDuration: (() -> Unit)? = null
-
-    val permission = Permission(19906, listOf(
-        Manifest.permission.WRITE_EXTERNAL_STORAGE,
-        Manifest.permission.RECORD_AUDIO,
-        Manifest.permission.CAMERA
-    ))
 
     // 用于请求权限
     var activity: Activity? = null
@@ -272,26 +265,9 @@ class CameraView: RelativeLayout {
         captureView.destroy()
     }
 
-    fun requestPermissions(): Boolean {
-        val context = activity ?: (context as Activity)
-        return permission.requestPermissions(context)
-    }
-
-    fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        permission.onRequestPermissionsResult(requestCode, permissions, grantResults)
-    }
-
     private fun startRecordVideo() {
 
         if (isVideoRecording) {
-            return
-        }
-
-        if (!requestPermissions()) {
-            return
-        }
-
-        if (!permission.checkExternalStorageWritable()) {
             return
         }
 
@@ -343,14 +319,6 @@ class CameraView: RelativeLayout {
     }
 
     private fun capturePhoto() {
-
-        if (!requestPermissions()) {
-            return
-        }
-
-        if (!permission.checkExternalStorageWritable()) {
-            return
-        }
 
         captureView.mode = Mode.PICTURE
         captureView.takePictureSnapshot()

@@ -22,9 +22,4 @@ abstract class CameraViewConfiguration {
     // 拍摄模式
     var captureMode = CaptureMode.PHOTO_VIDEO
 
-    /**
-     * 请求权限
-     */
-    abstract fun requestPermissions(permissions: List<String>, requestCode: Int): Boolean
-
 }
