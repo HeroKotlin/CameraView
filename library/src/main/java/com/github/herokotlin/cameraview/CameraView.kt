@@ -1,6 +1,5 @@
 package com.github.herokotlin.cameraview
 
-import android.Manifest
 import android.animation.AnimatorListenerAdapter
 import android.animation.TimeInterpolator
 import android.animation.ValueAnimator
@@ -36,7 +35,7 @@ import java.util.*
 class CameraView: RelativeLayout {
 
     companion object {
-        const val TAG = "CameraView"
+        const val TAG = "CameraViewDebug"
     }
 
     var onExit: (() -> Unit)? = null
@@ -57,6 +56,9 @@ class CameraView: RelativeLayout {
     private var isGuideLabelFadingOut = false
 
     private var isVideoRecording = false
+
+    // 是否忙于生成照片或视频
+    private var isBusy = false
 
     private val mediaMetadataRetriever = MediaMetadataRetriever()
 
@@ -87,6 +89,9 @@ class CameraView: RelativeLayout {
             override fun onPictureTaken(result: PictureResult) {
                 super.onPictureTaken(result)
 
+                isBusy = false
+                Log.d(TAG, "onPictureTaken")
+
                 result.toBitmap {
                     if (it != null) {
                         showPreviewView()
@@ -98,6 +103,9 @@ class CameraView: RelativeLayout {
 
             override fun onVideoTaken(result: VideoResult) {
                 super.onVideoTaken(result)
+
+                isBusy = false
+                Log.d(TAG, "onVideoTaken")
 
                 val videoPath = result.file.absolutePath
                 mediaMetadataRetriever.setDataSource(videoPath)
@@ -121,9 +129,14 @@ class CameraView: RelativeLayout {
             override fun onCameraError(exception: CameraException) {
                 super.onCameraError(exception)
 
+                isBusy = false
+                Log.d(TAG, "onCameraError")
+
                 if (isVideoRecording) {
                     showControls()
+                    isVideoRecording = false
                 }
+
                 Log.e(TAG, exception.localizedMessage)
 
             }
@@ -132,44 +145,81 @@ class CameraView: RelativeLayout {
         val circleViewCallback = object: CircleViewCallback {
 
             override fun onLongPressStart(circleView: CircleView) {
-                if (circleView == captureButton && configuration.captureMode != CaptureMode.PHOTO) {
-                    startRecordVideo()
+                if (circleView != captureButton) {
+                    return
                 }
-            }
-
-            override fun onLongPressEnd(circleView: CircleView) {
-                if (circleView == captureButton) {
-                    stopRecordVideo()
+                if (isBusy) {
+                    return
                 }
-            }
-
-            override fun onTouchDown(circleView: CircleView) {
-                if (circleView == captureButton) {
-                    circleView.centerColor =
-                        ContextCompat.getColor(context, R.color.camera_view_capture_button_center_color_pressed)
-                    circleView.invalidate()
-                    // 如果提示文字还在显示，此时应直接淡出
-                    // 无需等时间到了再开始动画
-                    if (configuration.guideLabelFadeOutDelay > 0) {
-                        onGuideLabelFadeOut()
+                if (configuration.captureMode != CaptureMode.PHOTO) {
+                    Log.d(TAG, "--- onLongPressStart")
+                    post {
+                        startRecordVideo()
                     }
                 }
             }
 
-            override fun onTouchEnter(circleView: CircleView) {
-                if (circleView == captureButton) {
-                    circleView.centerColor =
-                        ContextCompat.getColor(context, R.color.camera_view_capture_button_center_color_pressed)
-                    circleView.invalidate()
+            override fun onLongPressEnd(circleView: CircleView) {
+                if (circleView != captureButton) {
+                    return
+                }
+                if (isBusy) {
+                    return
+                }
+                Log.d(TAG, "--- onLongPressEnd")
+                post {
+                    stopRecordVideo()
+                }
+
+            }
+
+            override fun onTouchDown(circleView: CircleView) {
+
+                if (circleView != captureButton) {
+                    return
+                }
+
+                if (isBusy) {
+                    return
+                }
+
+                Log.d(TAG, "onTouchDown")
+
+                circleView.centerColor =
+                    ContextCompat.getColor(context, R.color.camera_view_capture_button_center_color_pressed)
+                circleView.invalidate()
+
+                // 如果提示文字还在显示，此时应直接淡出
+                // 无需等时间到了再开始动画
+                if (configuration.guideLabelFadeOutDelay > 0) {
+                    onGuideLabelFadeOut()
                 }
             }
 
-            override fun onTouchLeave(circleView: CircleView) {
-                if (circleView == captureButton) {
-                    circleView.centerColor =
-                        ContextCompat.getColor(context, R.color.camera_view_capture_button_center_color_normal)
-                    circleView.invalidate()
+            override fun onTouchEnter(circleView: CircleView) {
+                if (circleView != captureButton) {
+                    return
                 }
+                if (isBusy) {
+                    return
+                }
+                Log.d(TAG, "-- onTouchEnter")
+                circleView.centerColor =
+                    ContextCompat.getColor(context, R.color.camera_view_capture_button_center_color_pressed)
+                circleView.invalidate()
+            }
+
+            override fun onTouchLeave(circleView: CircleView) {
+                if (circleView != captureButton) {
+                    return
+                }
+                if (isBusy) {
+                    return
+                }
+                Log.d(TAG, "-- onTouchLeave")
+                circleView.centerColor =
+                    ContextCompat.getColor(context, R.color.camera_view_capture_button_center_color_normal)
+                circleView.invalidate()
             }
 
             override fun onTouchUp(circleView: CircleView, inside: Boolean, isLongPress: Boolean) {
@@ -185,15 +235,26 @@ class CameraView: RelativeLayout {
                 }
 
                 if (circleView == captureButton) {
+                    if (isBusy) {
+                        return
+                    }
+                    Log.d(TAG, "onTouchUp capture")
                     // 纯视频拍摄需要长按
                     if (configuration.captureMode != CaptureMode.VIDEO) {
-                        capturePhoto()
+                        post {
+                            capturePhoto()
+                        }
+
                     }
                 }
                 else if (circleView == cancelButton) {
+
+                    Log.d(TAG, "onTouchUp cancel")
                     hidePreviewView()
                 }
                 else if (circleView == submitButton) {
+
+                    Log.d(TAG, "onTouchUp submit")
                     val photo = previewView.photo
                     val video = previewView.video
                     hidePreviewView()
@@ -274,10 +335,15 @@ class CameraView: RelativeLayout {
 
     private fun startRecordVideo() {
 
+        if (isBusy) {
+            return
+        }
+
         if (isVideoRecording) {
             return
         }
 
+        Log.d(TAG, "startRecordVideo")
         captureView.mode = Mode.VIDEO
         captureView.takeVideoSnapshot(
             File(getFilePath(".mp4"))
@@ -307,13 +373,21 @@ class CameraView: RelativeLayout {
 
     private fun stopRecordVideo() {
 
+        if (isBusy) {
+            return
+        }
+
         if (!isVideoRecording) {
             return
         }
 
+        Log.d(TAG, "stopRecordVideo")
         // 把这个放前面，因为取消动画也会走进这里
         // 这时要直接返回
         isVideoRecording = false
+
+        // 此时开始等视频的回调
+        isBusy = true
 
         captureButton.centerRadius = resources.getDimensionPixelSize(R.dimen.camera_view_capture_button_center_radius_normal)
         captureButton.ringWidth = resources.getDimensionPixelSize(R.dimen.camera_view_capture_button_ring_width_normal)
@@ -327,6 +401,14 @@ class CameraView: RelativeLayout {
 
     private fun capturePhoto() {
 
+        if (isBusy) {
+            return
+        }
+
+        // 此时开始等照片的回调
+        isBusy = true
+
+        Log.d(TAG, "capturePhoto")
         captureView.mode = Mode.PICTURE
         captureView.takePictureSnapshot()
 
