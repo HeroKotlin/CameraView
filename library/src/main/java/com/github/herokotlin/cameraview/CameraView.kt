@@ -54,6 +54,8 @@ class CameraView: RelativeLayout {
 
     private var activeAnimator: ValueAnimator? = null
 
+    private var isGuideLabelFadingOut = false
+
     private var isVideoRecording = false
 
     private val mediaMetadataRetriever = MediaMetadataRetriever()
@@ -146,6 +148,11 @@ class CameraView: RelativeLayout {
                     circleView.centerColor =
                         ContextCompat.getColor(context, R.color.camera_view_capture_button_center_color_pressed)
                     circleView.invalidate()
+                    // 如果提示文字还在显示，此时应直接淡出
+                    // 无需等时间到了再开始动画
+                    if (configuration.guideLabelFadeOutDelay > 0) {
+                        onGuideLabelFadeOut()
+                    }
                 }
             }
 
@@ -364,6 +371,12 @@ class CameraView: RelativeLayout {
 
     private fun onGuideLabelFadeOut() {
 
+        if (isGuideLabelFadingOut || guideLabel.visibility == View.GONE) {
+            return
+        }
+
+        isGuideLabelFadingOut = true
+
         startAnimation(
             1000,
             LinearInterpolator(),
@@ -372,6 +385,7 @@ class CameraView: RelativeLayout {
             },
             {
                 guideLabel.visibility = View.GONE
+                isGuideLabelFadingOut = false
             }
         )
 
