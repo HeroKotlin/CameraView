@@ -35,7 +35,7 @@ import java.util.*
 class CameraView: RelativeLayout {
 
     companion object {
-        const val TAG = "CameraViewDebug"
+        const val TAG = "CameraView"
     }
 
     var onExit: (() -> Unit)? = null
@@ -90,7 +90,6 @@ class CameraView: RelativeLayout {
                 super.onPictureTaken(result)
 
                 isBusy = false
-                Log.d(TAG, "onPictureTaken")
 
                 result.toBitmap {
                     if (it != null) {
@@ -105,7 +104,6 @@ class CameraView: RelativeLayout {
                 super.onVideoTaken(result)
 
                 isBusy = false
-                Log.d(TAG, "onVideoTaken")
 
                 val videoPath = result.file.absolutePath
                 mediaMetadataRetriever.setDataSource(videoPath)
@@ -130,7 +128,6 @@ class CameraView: RelativeLayout {
                 super.onCameraError(exception)
 
                 isBusy = false
-                Log.d(TAG, "onCameraError")
 
                 if (isVideoRecording) {
                     showControls()
@@ -152,10 +149,7 @@ class CameraView: RelativeLayout {
                     return
                 }
                 if (configuration.captureMode != CaptureMode.PHOTO) {
-                    Log.d(TAG, "--- onLongPressStart")
-                    post {
-                        startRecordVideo()
-                    }
+                    startRecordVideo()
                 }
             }
 
@@ -166,11 +160,7 @@ class CameraView: RelativeLayout {
                 if (isBusy) {
                     return
                 }
-                Log.d(TAG, "--- onLongPressEnd")
-                post {
-                    stopRecordVideo()
-                }
-
+                stopRecordVideo()
             }
 
             override fun onTouchDown(circleView: CircleView) {
@@ -178,12 +168,9 @@ class CameraView: RelativeLayout {
                 if (circleView != captureButton) {
                     return
                 }
-
                 if (isBusy) {
                     return
                 }
-
-                Log.d(TAG, "onTouchDown")
 
                 circleView.centerColor =
                     ContextCompat.getColor(context, R.color.camera_view_capture_button_center_color_pressed)
@@ -203,7 +190,6 @@ class CameraView: RelativeLayout {
                 if (isBusy) {
                     return
                 }
-                Log.d(TAG, "-- onTouchEnter")
                 circleView.centerColor =
                     ContextCompat.getColor(context, R.color.camera_view_capture_button_center_color_pressed)
                 circleView.invalidate()
@@ -216,7 +202,6 @@ class CameraView: RelativeLayout {
                 if (isBusy) {
                     return
                 }
-                Log.d(TAG, "-- onTouchLeave")
                 circleView.centerColor =
                     ContextCompat.getColor(context, R.color.camera_view_capture_button_center_color_normal)
                 circleView.invalidate()
@@ -238,23 +223,15 @@ class CameraView: RelativeLayout {
                     if (isBusy) {
                         return
                     }
-                    Log.d(TAG, "onTouchUp capture")
                     // 纯视频拍摄需要长按
                     if (configuration.captureMode != CaptureMode.VIDEO) {
-                        post {
-                            capturePhoto()
-                        }
-
+                        capturePhoto()
                     }
                 }
                 else if (circleView == cancelButton) {
-
-                    Log.d(TAG, "onTouchUp cancel")
                     hidePreviewView()
                 }
                 else if (circleView == submitButton) {
-
-                    Log.d(TAG, "onTouchUp submit")
                     val photo = previewView.photo
                     val video = previewView.video
                     hidePreviewView()
@@ -343,11 +320,13 @@ class CameraView: RelativeLayout {
             return
         }
 
-        Log.d(TAG, "startRecordVideo")
         captureView.mode = Mode.VIDEO
-        captureView.takeVideoSnapshot(
-            File(getFilePath(".mp4"))
-        )
+        // 异步，怕卡住
+        post {
+            captureView.takeVideoSnapshot(
+                File(getFilePath(".mp4"))
+            )
+        }
 
         captureButton.centerRadius = resources.getDimensionPixelSize(R.dimen.camera_view_capture_button_center_radius_recording)
         captureButton.ringWidth = resources.getDimensionPixelSize(R.dimen.camera_view_capture_button_ring_width_recording)
@@ -381,7 +360,6 @@ class CameraView: RelativeLayout {
             return
         }
 
-        Log.d(TAG, "stopRecordVideo")
         // 把这个放前面，因为取消动画也会走进这里
         // 这时要直接返回
         isVideoRecording = false
@@ -394,7 +372,11 @@ class CameraView: RelativeLayout {
         captureButton.trackValue = 0f
         captureButton.requestLayout()
 
-        captureView.stopVideo()
+        // 异步，怕卡住
+        post {
+            captureView.stopVideo()
+        }
+
         activeAnimator?.cancel()
 
     }
@@ -408,9 +390,12 @@ class CameraView: RelativeLayout {
         // 此时开始等照片的回调
         isBusy = true
 
-        Log.d(TAG, "capturePhoto")
         captureView.mode = Mode.PICTURE
-        captureView.takePictureSnapshot()
+
+        // 异步，怕卡住
+        post {
+            captureView.takePictureSnapshot()
+        }
 
     }
 
