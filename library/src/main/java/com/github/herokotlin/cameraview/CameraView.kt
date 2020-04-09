@@ -104,6 +104,7 @@ class CameraView: RelativeLayout {
                 super.onVideoTaken(result)
 
                 isBusy = false
+                isVideoRecording = false
 
                 val videoPath = result.file.absolutePath
                 mediaMetadataRetriever.setDataSource(videoPath)
@@ -145,9 +146,6 @@ class CameraView: RelativeLayout {
                 if (circleView != captureButton) {
                     return
                 }
-                if (isBusy) {
-                    return
-                }
                 if (configuration.captureMode != CaptureMode.PHOTO) {
                     startRecordVideo()
                 }
@@ -155,9 +153,6 @@ class CameraView: RelativeLayout {
 
             override fun onLongPressEnd(circleView: CircleView) {
                 if (circleView != captureButton) {
-                    return
-                }
-                if (isBusy) {
                     return
                 }
                 stopRecordVideo()
@@ -359,10 +354,6 @@ class CameraView: RelativeLayout {
         if (!isVideoRecording) {
             return
         }
-
-        // 把这个放前面，因为取消动画也会走进这里
-        // 这时要直接返回
-        isVideoRecording = false
 
         // 此时开始等视频的回调
         isBusy = true
