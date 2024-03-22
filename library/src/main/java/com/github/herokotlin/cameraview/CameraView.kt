@@ -29,7 +29,6 @@ import com.otaliastudios.cameraview.gesture.GestureAction
 import kotlinx.android.synthetic.main.camera_view.view.*
 import java.io.File
 import java.io.FileOutputStream
-import java.text.SimpleDateFormat
 import java.util.*
 
 class CameraView: RelativeLayout {
@@ -422,9 +421,16 @@ class CameraView: RelativeLayout {
     }
 
     private fun getFilePath(extname: String): String {
-        val dirname = context.externalCacheDir.absoluteFile.absolutePath
-        val filename = SimpleDateFormat("yyyy_MM_dd_HH_mm_ss", Locale.US).format(Date())
-        return "$dirname/$filename$extname"
+
+        val cacheDir = context.externalCacheDir ?: return ""
+
+        var dirname = cacheDir.absolutePath
+        if (!dirname.endsWith(File.separator)) {
+            dirname += File.separator
+        }
+
+        return dirname + UUID.randomUUID().toString() + extname
+
     }
 
     private fun onGuideLabelFadeOut() {
