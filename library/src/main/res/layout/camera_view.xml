@@ -8,7 +8,8 @@
     <com.otaliastudios.cameraview.CameraView
             android:id="@+id/captureView"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="match_parent"
+            app:cameraRequestPermissions="false"/>
 
     <com.github.herokotlin.cameraview.view.PreviewView
             android:id="@+id/previewView"

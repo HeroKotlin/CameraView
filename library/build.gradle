@@ -36,7 +36,7 @@ dependencies {
     implementation "androidx.appcompat:appcompat:${safeExtGet('androidxVersion', '1.1.0')}"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:${safeExtGet('kotlinVersion', '1.7.20')}"
 
-    api "com.otaliastudios:cameraview:${safeExtGet('cameraviewVersion', '2.6.2')}"
+    api "com.otaliastudios:cameraview:${safeExtGet('cameraviewVersion', '2.7.2')}"
 
     implementation 'com.github.herokotlin:CircleView:0.0.9'
 
