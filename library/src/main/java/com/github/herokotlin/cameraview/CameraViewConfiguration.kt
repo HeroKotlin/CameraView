@@ -10,7 +10,7 @@ abstract class CameraViewConfiguration {
     var guideLabelFadeOutDelay = 3L
 
     // 图片是否需要返回 base64
-    var photoBase64Enabled = true
+    var photoBase64Enabled = false
 
     var videoBitRate = 0
 
