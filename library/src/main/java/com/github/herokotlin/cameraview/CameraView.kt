@@ -6,8 +6,10 @@ import android.animation.ValueAnimator
 import android.app.Activity
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.media.MediaMetadataRetriever
 import android.util.AttributeSet
+import android.util.Base64
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -15,6 +17,8 @@ import android.view.animation.LinearInterpolator
 import android.widget.RelativeLayout
 import androidx.core.content.ContextCompat
 import com.github.herokotlin.cameraview.enum.CaptureMode
+import com.github.herokotlin.cameraview.model.Photo
+import com.github.herokotlin.cameraview.model.Video
 import com.github.herokotlin.circleview.CircleView
 import com.github.herokotlin.circleview.CircleViewCallback
 import com.otaliastudios.cameraview.CameraException
@@ -27,6 +31,7 @@ import com.otaliastudios.cameraview.controls.PictureFormat
 import com.otaliastudios.cameraview.gesture.Gesture
 import com.otaliastudios.cameraview.gesture.GestureAction
 import kotlinx.android.synthetic.main.camera_view.view.*
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.util.*
@@ -39,9 +44,9 @@ class CameraView: RelativeLayout {
 
     var onExit: (() -> Unit)? = null
 
-    var onCapturePhoto: ((String, Long, Int, Int) -> Unit)? = null
+    var onCapturePhoto: ((Photo) -> Unit)? = null
 
-    var onRecordVideo: ((String, Long, Int, String, Long, Int, Int) -> Unit)? = null
+    var onRecordVideo: ((Video, Photo) -> Unit)? = null
 
     var onRecordDurationLessThanMinDuration: (() -> Unit)? = null
 
@@ -392,31 +397,40 @@ class CameraView: RelativeLayout {
     private fun submit(photo: Bitmap?, videoPath: String) {
 
         if (photo != null) {
-            val photoFile = saveToDisk(photo)
-            onCapturePhoto?.invoke(photoFile.absolutePath, photoFile.length(), photo.width, photo.height)
+            onCapturePhoto?.invoke(saveToDisk(photo, 100))
         }
         else {
             mediaMetadataRetriever.frameAtTime?.let {
                 val videoFile = File(videoPath)
-                val photoFile = saveToDisk(it)
                 onRecordVideo?.invoke(
-                    videoFile.absolutePath, videoFile.length(), videoDuration,
-                    photoFile.absolutePath, photoFile.length(), it.width, it.height
+                    Video(videoFile.absolutePath, videoFile.length(), videoDuration),
+                    saveToDisk(it, 80)
                 )
             }
         }
     }
 
-    private fun saveToDisk(bitmap: Bitmap): File {
+    private fun saveToDisk(bitmap: Bitmap, quality: Int): Photo {
 
         val file = File(getFilePath(".jpg"))
-        val outputStream = FileOutputStream(file)
 
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
-        outputStream.flush()
-        outputStream.close()
+        val byteOutput = ByteArrayOutputStream()
+        val fileOutput = FileOutputStream(file)
 
-        return file
+        bitmap.compress(Bitmap.CompressFormat.JPEG, quality, byteOutput)
+
+        var base64 = ""
+        if (configuration.photoBase64Enabled) {
+            base64 = Base64.encodeToString(byteOutput.toByteArray(), Base64.DEFAULT)
+        }
+
+        byteOutput.writeTo(fileOutput)
+
+        fileOutput.flush()
+        fileOutput.close()
+        byteOutput.close()
+
+        return Photo(file.absolutePath, base64, file.length(), bitmap.width, bitmap.height)
 
     }
 

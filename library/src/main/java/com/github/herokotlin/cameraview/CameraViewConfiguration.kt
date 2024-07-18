@@ -9,6 +9,9 @@ abstract class CameraViewConfiguration {
     // 三秒后淡出文字
     var guideLabelFadeOutDelay = 3L
 
+    // 图片是否需要返回 base64
+    var photoBase64Enabled = true
+
     var videoBitRate = 0
 
     var audioBitRate = 0

@@ -42,11 +42,11 @@ class CameraViewActivity: AppCompatActivity() {
         cameraView.onExit = {
             callback.onExit(this)
         }
-        cameraView.onCapturePhoto = { photoPath, photoSize, photoWidth, photoHeight ->
-            callback.onCapturePhoto(this, photoPath, photoSize, photoWidth, photoHeight)
+        cameraView.onCapturePhoto = { photo ->
+            callback.onCapturePhoto(this, photo)
         }
-        cameraView.onRecordVideo = { videoPath, videoSize, videoDuration, photoPath, photoSize, photoWidth, photoHeight ->
-            callback.onRecordVideo(this, videoPath, videoSize, videoDuration, photoPath, photoSize, photoWidth, photoHeight)
+        cameraView.onRecordVideo = { video, photo ->
+            callback.onRecordVideo(this, video, photo)
         }
         cameraView.onRecordDurationLessThanMinDuration = {
             callback.onRecordDurationLessThanMinDuration(this)
