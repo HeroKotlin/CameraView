@@ -90,11 +90,6 @@ class CameraView: RelativeLayout {
 
         LayoutInflater.from(context).inflate(R.layout.camera_view, this)
 
-        captureView.audio = Audio.ON
-        if (configuration.captureMode == CaptureMode.PHOTO) {
-            captureView.audio = Audio.OFF
-        }
-
         captureView.addCameraListener(object: CameraListener() {
             override fun onPictureTaken(result: PictureResult) {
                 super.onPictureTaken(result)
@@ -295,6 +290,12 @@ class CameraView: RelativeLayout {
 
         captureView.mapGesture(Gesture.PINCH, GestureAction.ZOOM)
         captureView.mapGesture(Gesture.TAP, GestureAction.AUTO_FOCUS)
+
+        captureView.audio = if (configuration.captureMode == CaptureMode.PHOTO) {
+            Audio.OFF
+        } else {
+            Audio.ON
+        }
 
         captureView.videoBitRate = configuration.videoBitRate
         captureView.audioBitRate = configuration.audioBitRate
