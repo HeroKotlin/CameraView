@@ -25,6 +25,7 @@ import com.otaliastudios.cameraview.CameraException
 import com.otaliastudios.cameraview.CameraListener
 import com.otaliastudios.cameraview.PictureResult
 import com.otaliastudios.cameraview.VideoResult
+import com.otaliastudios.cameraview.controls.Audio
 import com.otaliastudios.cameraview.controls.Flash
 import com.otaliastudios.cameraview.controls.Mode
 import com.otaliastudios.cameraview.controls.PictureFormat
@@ -88,6 +89,11 @@ class CameraView: RelativeLayout {
     private fun init() {
 
         LayoutInflater.from(context).inflate(R.layout.camera_view, this)
+
+        captureView.audio = Audio.ON
+        if (configuration.captureMode == CaptureMode.PHOTO) {
+            captureView.audio = Audio.OFF
+        }
 
         captureView.addCameraListener(object: CameraListener() {
             override fun onPictureTaken(result: PictureResult) {
