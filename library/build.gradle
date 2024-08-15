@@ -4,29 +4,29 @@ def safeExtGet(prop, fallback) {
 
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
 group = 'com.github.herokotlin'
 
 android {
-    compileSdkVersion safeExtGet('compileSdkVersion', 34)
-    buildToolsVersion safeExtGet('buildToolsVersion', '34.0.0')
+    compileSdkVersion safeExtGet('compileSdkVersion', 28)
+    buildToolsVersion safeExtGet('buildToolsVersion', '28.0.3')
 
     defaultConfig {
         minSdkVersion safeExtGet('minSdkVersion', 16)
-        targetSdkVersion safeExtGet('targetSdkVersion', 34)
+        targetSdkVersion safeExtGet('targetSdkVersion', 28)
+        versionCode 1
+        versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
     }
-    buildFeatures {
-        viewBinding true
-    }
+
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
-    namespace 'com.github.herokotlin.cameraview'
 
 }
 

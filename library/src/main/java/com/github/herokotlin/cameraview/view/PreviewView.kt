@@ -7,12 +7,10 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.FrameLayout
-import com.github.herokotlin.cameraview.databinding.CameraViewBinding
-import com.github.herokotlin.cameraview.databinding.CameraViewPreviewViewBinding
+import com.github.herokotlin.cameraview.R
+import kotlinx.android.synthetic.main.camera_view_preview_view.view.*
 
 class PreviewView: FrameLayout {
-
-    private lateinit var binding: CameraViewPreviewViewBinding
 
     var photo: Bitmap? = null
 
@@ -25,11 +23,11 @@ class PreviewView: FrameLayout {
             field = value
 
             if (value == null) {
-                binding.imageView.visibility = View.GONE
+                imageView.visibility = View.GONE
             }
             else {
-                binding.imageView.visibility = View.VISIBLE
-                binding.imageView.setImageBitmap(value)
+                imageView.visibility = View.VISIBLE
+                imageView.setImageBitmap(value)
             }
 
         }
@@ -44,12 +42,12 @@ class PreviewView: FrameLayout {
 
             field = value
 
-            binding.videoView.stopPlayback()
-            binding.videoView.visibility = View.GONE
+            videoView.stopPlayback()
+            videoView.visibility = View.GONE
 
             if (value.isNotEmpty()) {
-                binding.videoView.visibility = View.VISIBLE
-                binding.videoView.setVideoURI(Uri.parse(value))
+                videoView.visibility = View.VISIBLE
+                videoView.setVideoURI(Uri.parse(value))
             }
 
         }
@@ -67,9 +65,9 @@ class PreviewView: FrameLayout {
     }
 
     private fun init() {
-        binding = CameraViewPreviewViewBinding.inflate(LayoutInflater.from(context), this, true)
+        LayoutInflater.from(context).inflate(R.layout.camera_view_preview_view, this)
 
-        binding.videoView.setOnPreparedListener {
+        videoView.setOnPreparedListener {
             it.isLooping = true
             it.start()
         }
