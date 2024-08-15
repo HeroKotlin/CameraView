@@ -6,7 +6,7 @@ import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import android.view.View
-import kotlinx.android.synthetic.main.camera_view_activity.*
+import com.github.herokotlin.cameraview.databinding.CameraViewActivityBinding
 
 class CameraViewActivity: AppCompatActivity() {
 
@@ -23,6 +23,8 @@ class CameraViewActivity: AppCompatActivity() {
 
     }
 
+    private lateinit var binding: CameraViewActivityBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
@@ -34,21 +36,22 @@ class CameraViewActivity: AppCompatActivity() {
 
         window.decorView.systemUiVisibility = flags
 
-        setContentView(R.layout.camera_view_activity)
+        binding = CameraViewActivityBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        cameraView.init(configuration)
+        binding.cameraView.init(configuration)
 
-        cameraView.activity = this
-        cameraView.onExit = {
+        binding.cameraView.activity = this
+        binding.cameraView.onExit = {
             callback.onExit(this)
         }
-        cameraView.onCapturePhoto = { photo ->
+        binding.cameraView.onCapturePhoto = { photo ->
             callback.onCapturePhoto(this, photo)
         }
-        cameraView.onRecordVideo = { video, photo ->
+        binding.cameraView.onRecordVideo = { video, photo ->
             callback.onRecordVideo(this, video, photo)
         }
-        cameraView.onRecordDurationLessThanMinDuration = {
+        binding.cameraView.onRecordDurationLessThanMinDuration = {
             callback.onRecordDurationLessThanMinDuration(this)
         }
 
@@ -56,17 +59,17 @@ class CameraViewActivity: AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        cameraView.open()
+        binding.cameraView.open()
     }
 
     override fun onPause() {
         super.onPause()
-        cameraView.close()
+        binding.cameraView.close()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        cameraView.destroy()
+        binding.cameraView.destroy()
     }
 
 }

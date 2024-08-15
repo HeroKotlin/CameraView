@@ -15,6 +15,7 @@ import android.view.View
 import android.view.animation.LinearInterpolator
 import android.widget.RelativeLayout
 import androidx.core.content.ContextCompat
+import com.github.herokotlin.cameraview.databinding.CameraViewBinding
 import com.github.herokotlin.cameraview.enum.CaptureMode
 import com.github.herokotlin.cameraview.model.Photo
 import com.github.herokotlin.cameraview.model.Video
@@ -30,7 +31,6 @@ import com.otaliastudios.cameraview.controls.Mode
 import com.otaliastudios.cameraview.controls.PictureFormat
 import com.otaliastudios.cameraview.gesture.Gesture
 import com.otaliastudios.cameraview.gesture.GestureAction
-import kotlinx.android.synthetic.main.camera_view.view.*
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
@@ -41,6 +41,8 @@ class CameraView: RelativeLayout {
     companion object {
         const val TAG = "CameraView"
     }
+
+    private lateinit var binding: CameraViewBinding
 
     var onExit: (() -> Unit)? = null
 
@@ -87,9 +89,9 @@ class CameraView: RelativeLayout {
 
     private fun init() {
 
-        LayoutInflater.from(context).inflate(R.layout.camera_view, this)
+        binding = CameraViewBinding.inflate(LayoutInflater.from(context), this, true)
 
-        captureView.addCameraListener(object: CameraListener() {
+        binding.captureView.addCameraListener(object: CameraListener() {
             override fun onPictureTaken(result: PictureResult) {
                 super.onPictureTaken(result)
 
@@ -98,7 +100,7 @@ class CameraView: RelativeLayout {
                 result.toBitmap {
                     if (it != null) {
                         showPreviewView()
-                        previewView.photo = it
+                        binding.previewView.photo = it
                     }
                 }
 
@@ -119,7 +121,7 @@ class CameraView: RelativeLayout {
 
                     if (duration >= configuration.videoMinDuration) {
                         showPreviewView()
-                        previewView.video = videoPath
+                        binding.previewView.video = videoPath
                         return
                     }
                     onRecordDurationLessThanMinDuration?.invoke()
@@ -147,7 +149,7 @@ class CameraView: RelativeLayout {
         val circleViewCallback = object: CircleViewCallback {
 
             override fun onLongPressStart(circleView: CircleView) {
-                if (circleView != captureButton) {
+                if (circleView != binding.captureButton) {
                     return
                 }
                 if (configuration.captureMode != CaptureMode.PHOTO) {
@@ -156,7 +158,7 @@ class CameraView: RelativeLayout {
             }
 
             override fun onLongPressEnd(circleView: CircleView) {
-                if (circleView != captureButton) {
+                if (circleView != binding.captureButton) {
                     return
                 }
                 stopRecordVideo()
@@ -164,7 +166,7 @@ class CameraView: RelativeLayout {
 
             override fun onTouchDown(circleView: CircleView) {
 
-                if (circleView != captureButton) {
+                if (circleView != binding.captureButton) {
                     return
                 }
                 if (isBusy) {
@@ -183,7 +185,7 @@ class CameraView: RelativeLayout {
             }
 
             override fun onTouchEnter(circleView: CircleView) {
-                if (circleView != captureButton) {
+                if (circleView != binding.captureButton) {
                     return
                 }
                 if (isBusy) {
@@ -195,7 +197,7 @@ class CameraView: RelativeLayout {
             }
 
             override fun onTouchLeave(circleView: CircleView) {
-                if (circleView != captureButton) {
+                if (circleView != binding.captureButton) {
                     return
                 }
                 if (isBusy) {
@@ -208,7 +210,7 @@ class CameraView: RelativeLayout {
 
             override fun onTouchUp(circleView: CircleView, inside: Boolean, isLongPress: Boolean) {
 
-                if (inside && circleView == captureButton) {
+                if (inside && circleView == binding.captureButton) {
                     circleView.centerColor =
                         ContextCompat.getColor(context, R.color.camera_view_capture_button_center_color_normal)
                     circleView.invalidate()
@@ -218,7 +220,7 @@ class CameraView: RelativeLayout {
                     return
                 }
 
-                if (circleView == captureButton) {
+                if (circleView == binding.captureButton) {
                     if (isBusy) {
                         return
                     }
@@ -227,12 +229,12 @@ class CameraView: RelativeLayout {
                         capturePhoto()
                     }
                 }
-                else if (circleView == cancelButton) {
+                else if (circleView == binding.cancelButton) {
                     hidePreviewView()
                 }
-                else if (circleView == submitButton) {
-                    val photo = previewView.photo
-                    val video = previewView.video
+                else if (circleView == binding.submitButton) {
+                    val photo = binding.previewView.photo
+                    val video = binding.previewView.video
                     hidePreviewView()
                     submit(photo, video)
                 }
@@ -240,32 +242,32 @@ class CameraView: RelativeLayout {
             }
         }
 
-        captureButton.callback = circleViewCallback
-        cancelButton.callback = circleViewCallback
-        submitButton.callback = circleViewCallback
+        binding.captureButton.callback = circleViewCallback
+        binding.cancelButton.callback = circleViewCallback
+        binding.submitButton.callback = circleViewCallback
 
-        exitButton.setOnClickListener {
+        binding.exitButton.setOnClickListener {
             onExit?.invoke()
         }
 
-        flipButton.setOnClickListener {
-            captureView.toggleFacing()
+        binding.flipButton.setOnClickListener {
+            binding.captureView.toggleFacing()
         }
 
-        flashButton.setOnClickListener {
+        binding.flashButton.setOnClickListener {
 
-            when (captureView.flash) {
+            when (binding.captureView.flash) {
                 Flash.AUTO -> {
-                    captureView.flash = Flash.ON
-                    flashButton.setImageResource(R.drawable.camera_view_flash_auto)
+                    binding.captureView.flash = Flash.ON
+                    binding.flashButton.setImageResource(R.drawable.camera_view_flash_auto)
                 }
                 Flash.ON -> {
-                    captureView.flash = Flash.OFF
-                    flashButton.setImageResource(R.drawable.camera_view_flash_on)
+                    binding.captureView.flash = Flash.OFF
+                    binding.flashButton.setImageResource(R.drawable.camera_view_flash_on)
                 }
                 else -> {
-                    captureView.flash = Flash.AUTO
-                    flashButton.setImageResource(R.drawable.camera_view_flash_off)
+                    binding.captureView.flash = Flash.AUTO
+                    binding.flashButton.setImageResource(R.drawable.camera_view_flash_off)
                 }
             }
 
@@ -278,8 +280,8 @@ class CameraView: RelativeLayout {
         this.configuration = configuration
 
         if (configuration.guideLabelTitle.isNotEmpty()) {
-            guideLabel.visibility = View.VISIBLE
-            guideLabel.text = configuration.guideLabelTitle
+            binding.guideLabel.visibility = View.VISIBLE
+            binding.guideLabel.text = configuration.guideLabelTitle
             if (configuration.guideLabelFadeOutDelay > 0) {
                 postDelayed({
                     onGuideLabelFadeOut()
@@ -287,32 +289,32 @@ class CameraView: RelativeLayout {
             }
         }
 
-        captureView.mapGesture(Gesture.PINCH, GestureAction.ZOOM)
-        captureView.mapGesture(Gesture.TAP, GestureAction.AUTO_FOCUS)
+        binding.captureView.mapGesture(Gesture.PINCH, GestureAction.ZOOM)
+        binding.captureView.mapGesture(Gesture.TAP, GestureAction.AUTO_FOCUS)
 
-        captureView.audio = if (configuration.captureMode == CaptureMode.PHOTO) {
+        binding.captureView.audio = if (configuration.captureMode == CaptureMode.PHOTO) {
             Audio.OFF
         } else {
             Audio.ON
         }
 
-        captureView.videoBitRate = configuration.videoBitRate
-        captureView.audioBitRate = configuration.audioBitRate
+        binding.captureView.videoBitRate = configuration.videoBitRate
+        binding.captureView.audioBitRate = configuration.audioBitRate
 
-        captureView.pictureFormat = PictureFormat.JPEG
+        binding.captureView.pictureFormat = PictureFormat.JPEG
 
     }
 
     fun open() {
-        captureView.open()
+        binding.captureView.open()
     }
 
     fun close() {
-        captureView.close()
+        binding.captureView.close()
     }
 
     fun destroy() {
-        captureView.destroy()
+        binding.captureView.destroy()
     }
 
     private fun startRecordVideo() {
@@ -325,25 +327,25 @@ class CameraView: RelativeLayout {
             return
         }
 
-        captureView.mode = Mode.VIDEO
+        binding.captureView.mode = Mode.VIDEO
         // 异步，怕卡住
         post {
-            captureView.takeVideoSnapshot(
+            binding.captureView.takeVideoSnapshot(
                 File(getFilePath(".mp4"))
             )
         }
 
-        captureButton.centerRadius = resources.getDimensionPixelSize(R.dimen.camera_view_capture_button_center_radius_recording)
-        captureButton.ringWidth = resources.getDimensionPixelSize(R.dimen.camera_view_capture_button_ring_width_recording)
-        captureButton.requestLayout()
+        binding.captureButton.centerRadius = resources.getDimensionPixelSize(R.dimen.camera_view_capture_button_center_radius_recording)
+        binding.captureButton.ringWidth = resources.getDimensionPixelSize(R.dimen.camera_view_capture_button_ring_width_recording)
+        binding.captureButton.requestLayout()
 
         startAnimation(
             configuration.videoMaxDuration,
             LinearInterpolator(),
             {
                 // 避免结束时还无法到达满圆
-                captureButton.trackValue = if (it > 0.99) 1f else it
-                captureButton.invalidate()
+                binding.captureButton.trackValue = if (it > 0.99) 1f else it
+                binding.captureButton.invalidate()
             },
             {
                 stopRecordVideo()
@@ -368,14 +370,14 @@ class CameraView: RelativeLayout {
         // 此时开始等视频的回调
         isBusy = true
 
-        captureButton.centerRadius = resources.getDimensionPixelSize(R.dimen.camera_view_capture_button_center_radius_normal)
-        captureButton.ringWidth = resources.getDimensionPixelSize(R.dimen.camera_view_capture_button_ring_width_normal)
-        captureButton.trackValue = 0f
-        captureButton.requestLayout()
+        binding.captureButton.centerRadius = resources.getDimensionPixelSize(R.dimen.camera_view_capture_button_center_radius_normal)
+        binding.captureButton.ringWidth = resources.getDimensionPixelSize(R.dimen.camera_view_capture_button_ring_width_normal)
+        binding.captureButton.trackValue = 0f
+        binding.captureButton.requestLayout()
 
         // 异步，怕卡住
         post {
-            captureView.stopVideo()
+            binding.captureView.stopVideo()
         }
 
         activeAnimator?.cancel()
@@ -391,11 +393,11 @@ class CameraView: RelativeLayout {
         // 此时开始等照片的回调
         isBusy = true
 
-        captureView.mode = Mode.PICTURE
+        binding.captureView.mode = Mode.PICTURE
 
         // 异步，怕卡住
         post {
-            captureView.takePictureSnapshot()
+            binding.captureView.takePictureSnapshot()
         }
 
     }
@@ -455,7 +457,7 @@ class CameraView: RelativeLayout {
 
     private fun onGuideLabelFadeOut() {
 
-        if (isGuideLabelFadingOut || guideLabel.visibility == View.GONE) {
+        if (isGuideLabelFadingOut || binding.guideLabel.visibility == View.GONE) {
             return
         }
 
@@ -465,10 +467,10 @@ class CameraView: RelativeLayout {
             1000,
             LinearInterpolator(),
             {
-                guideLabel.alpha = 1 - it
+                binding.guideLabel.alpha = 1 - it
             },
             {
-                guideLabel.visibility = View.GONE
+                binding.guideLabel.visibility = View.GONE
                 isGuideLabelFadingOut = false
             }
         )
@@ -477,7 +479,7 @@ class CameraView: RelativeLayout {
 
     private fun showPreviewView() {
 
-        val chooseLayoutParams = chooseView.layoutParams
+        val chooseLayoutParams = binding.chooseView.layoutParams
 
         startAnimation(
             200,
@@ -486,30 +488,30 @@ class CameraView: RelativeLayout {
                 val alpha = 1 - it
 
                 chooseLayoutParams.width = (chooseViewWidth * it).toInt()
-                chooseView.alpha = it
-                chooseView.requestLayout()
+                binding.chooseView.alpha = it
+                binding.chooseView.requestLayout()
 
-                flashButton.alpha = alpha
-                flipButton.alpha = alpha
-                exitButton.alpha = alpha
-                captureButton.alpha = alpha
+                binding.flashButton.alpha = alpha
+                binding.flipButton.alpha = alpha
+                binding.exitButton.alpha = alpha
+                binding.captureButton.alpha = alpha
             },
             {
-                flashButton.visibility = View.GONE
-                flipButton.visibility = View.GONE
-                exitButton.visibility = View.GONE
-                captureButton.visibility = View.GONE
+                binding.flashButton.visibility = View.GONE
+                binding.flipButton.visibility = View.GONE
+                binding.exitButton.visibility = View.GONE
+                binding.captureButton.visibility = View.GONE
             }
         )
 
-        previewView.visibility = View.VISIBLE
-        captureView.visibility = View.GONE
+        binding.previewView.visibility = View.VISIBLE
+        binding.captureView.visibility = View.GONE
 
     }
 
     private fun hidePreviewView() {
 
-        val chooseLayoutParams = chooseView.layoutParams
+        val chooseLayoutParams = binding.chooseView.layoutParams
 
         startAnimation(
             200,
@@ -518,39 +520,39 @@ class CameraView: RelativeLayout {
                 val alpha = 1 - it
 
                 chooseLayoutParams.width = (chooseViewWidth * alpha).toInt()
-                chooseView.alpha = alpha
-                chooseView.requestLayout()
+                binding.chooseView.alpha = alpha
+                binding.chooseView.requestLayout()
 
-                flashButton.alpha = it
-                flipButton.alpha = it
-                exitButton.alpha = it
-                captureButton.alpha = it
+                binding.flashButton.alpha = it
+                binding.flipButton.alpha = it
+                binding.exitButton.alpha = it
+                binding.captureButton.alpha = it
             }
         )
 
-        captureView.visibility = View.VISIBLE
-        flashButton.visibility = View.VISIBLE
-        flipButton.visibility = View.VISIBLE
-        exitButton.visibility = View.VISIBLE
-        captureButton.visibility = View.VISIBLE
+        binding.captureView.visibility = View.VISIBLE
+        binding.flashButton.visibility = View.VISIBLE
+        binding.flipButton.visibility = View.VISIBLE
+        binding.exitButton.visibility = View.VISIBLE
+        binding.captureButton.visibility = View.VISIBLE
 
-        previewView.visibility = View.GONE
+        binding.previewView.visibility = View.GONE
 
-        previewView.photo = null
-        previewView.video = ""
+        binding.previewView.photo = null
+        binding.previewView.video = ""
 
     }
 
     private fun showControls() {
-        flipButton.visibility = View.VISIBLE
-        flashButton.visibility = View.VISIBLE
-        exitButton.visibility = View.VISIBLE
+        binding.flipButton.visibility = View.VISIBLE
+        binding.flashButton.visibility = View.VISIBLE
+        binding.exitButton.visibility = View.VISIBLE
     }
 
     private fun hideControls() {
-        flipButton.visibility = View.GONE
-        flashButton.visibility = View.GONE
-        exitButton.visibility = View.GONE
+        binding.flipButton.visibility = View.GONE
+        binding.flashButton.visibility = View.GONE
+        binding.exitButton.visibility = View.GONE
     }
 
     private fun startAnimation(duration: Long, interpolator: TimeInterpolator, update: (Float) -> Unit, complete: (() -> Unit)? = null) {

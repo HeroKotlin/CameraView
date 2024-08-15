@@ -7,10 +7,11 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.FrameLayout
-import com.github.herokotlin.cameraview.R
-import kotlinx.android.synthetic.main.camera_view_preview_view.view.*
+import com.github.herokotlin.cameraview.databinding.CameraViewPreviewViewBinding
 
 class PreviewView: FrameLayout {
+
+    private lateinit var binding: CameraViewPreviewViewBinding
 
     var photo: Bitmap? = null
 
@@ -23,11 +24,11 @@ class PreviewView: FrameLayout {
             field = value
 
             if (value == null) {
-                imageView.visibility = View.GONE
+                binding.imageView.visibility = View.GONE
             }
             else {
-                imageView.visibility = View.VISIBLE
-                imageView.setImageBitmap(value)
+                binding.imageView.visibility = View.VISIBLE
+                binding.imageView.setImageBitmap(value)
             }
 
         }
@@ -42,12 +43,12 @@ class PreviewView: FrameLayout {
 
             field = value
 
-            videoView.stopPlayback()
-            videoView.visibility = View.GONE
+            binding.videoView.stopPlayback()
+            binding.videoView.visibility = View.GONE
 
             if (value.isNotEmpty()) {
-                videoView.visibility = View.VISIBLE
-                videoView.setVideoURI(Uri.parse(value))
+                binding.videoView.visibility = View.VISIBLE
+                binding.videoView.setVideoURI(Uri.parse(value))
             }
 
         }
@@ -65,9 +66,9 @@ class PreviewView: FrameLayout {
     }
 
     private fun init() {
-        LayoutInflater.from(context).inflate(R.layout.camera_view_preview_view, this)
+        binding = CameraViewPreviewViewBinding.inflate(LayoutInflater.from(context), this, true)
 
-        videoView.setOnPreparedListener {
+        binding.videoView.setOnPreparedListener {
             it.isLooping = true
             it.start()
         }
