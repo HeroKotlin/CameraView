@@ -6,7 +6,9 @@ import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import android.view.View
-import kotlinx.android.synthetic.main.camera_view_activity.*
+import android.view.WindowInsetsController
+import androidx.core.view.ViewCompat
+import com.github.herokotlin.cameraview.databinding.CameraViewActivityBinding
 
 class CameraViewActivity: AppCompatActivity() {
 
@@ -23,32 +25,28 @@ class CameraViewActivity: AppCompatActivity() {
 
     }
 
+    private lateinit var binding: CameraViewActivityBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
 
-        var flags = View.SYSTEM_UI_FLAG_FULLSCREEN or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            flags = flags or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-        }
+        binding = CameraViewActivityBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        window.decorView.systemUiVisibility = flags
+        binding.cameraView.init(configuration)
 
-        setContentView(R.layout.camera_view_activity)
-
-        cameraView.init(configuration)
-
-        cameraView.activity = this
-        cameraView.onExit = {
+        binding.cameraView.activity = this
+        binding.cameraView.onExit = {
             callback.onExit(this)
         }
-        cameraView.onCapturePhoto = { photo ->
+        binding.cameraView.onCapturePhoto = { photo ->
             callback.onCapturePhoto(this, photo)
         }
-        cameraView.onRecordVideo = { video, photo ->
+        binding.cameraView.onRecordVideo = { video, photo ->
             callback.onRecordVideo(this, video, photo)
         }
-        cameraView.onRecordDurationLessThanMinDuration = {
+        binding.cameraView.onRecordDurationLessThanMinDuration = {
             callback.onRecordDurationLessThanMinDuration(this)
         }
 
@@ -56,17 +54,17 @@ class CameraViewActivity: AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        cameraView.open()
+        binding.cameraView.open()
     }
 
     override fun onPause() {
         super.onPause()
-        cameraView.close()
+        binding.cameraView.close()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        cameraView.destroy()
+        binding.cameraView.destroy()
     }
 
 }
