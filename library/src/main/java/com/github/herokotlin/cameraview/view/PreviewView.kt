@@ -2,12 +2,12 @@ package com.github.herokotlin.cameraview.view
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.net.Uri
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.FrameLayout
 import com.github.herokotlin.cameraview.databinding.CameraViewPreviewViewBinding
+import androidx.core.net.toUri
 
 class PreviewView: FrameLayout {
 
@@ -48,7 +48,7 @@ class PreviewView: FrameLayout {
 
             if (value.isNotEmpty()) {
                 binding.videoView.visibility = View.VISIBLE
-                binding.videoView.setVideoURI(Uri.parse(value))
+                binding.videoView.setVideoURI(value.toUri())
             }
 
         }

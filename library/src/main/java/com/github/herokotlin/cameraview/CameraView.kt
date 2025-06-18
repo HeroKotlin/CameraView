@@ -115,7 +115,7 @@ class CameraView: RelativeLayout {
                 val videoPath = result.file.absolutePath
                 mediaMetadataRetriever.setDataSource(videoPath)
 
-                val duration = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION).toIntOrNull()
+                val duration = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toIntOrNull()
                 if (duration != null) {
                     videoDuration = duration
 
@@ -568,7 +568,7 @@ class CameraView: RelativeLayout {
         }
         animator.addListener(object: AnimatorListenerAdapter() {
             // 动画被取消，onAnimationEnd() 也会被调用
-            override fun onAnimationEnd(animation: android.animation.Animator?) {
+            override fun onAnimationEnd(animation: android.animation.Animator) {
                 complete?.invoke()
                 if (animation == activeAnimator) {
                     activeAnimator = null

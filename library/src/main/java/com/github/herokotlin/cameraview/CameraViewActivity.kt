@@ -5,7 +5,7 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import android.view.View
+import androidx.core.view.WindowCompat
 import com.github.herokotlin.cameraview.databinding.CameraViewActivityBinding
 
 class CameraViewActivity: AppCompatActivity() {
@@ -29,12 +29,10 @@ class CameraViewActivity: AppCompatActivity() {
 
         super.onCreate(savedInstanceState)
 
-        var flags = View.SYSTEM_UI_FLAG_FULLSCREEN or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            flags = flags or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+        // >= 安卓15 关闭 edge-to-edge
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+            WindowCompat.setDecorFitsSystemWindows(window, true)
         }
-
-        window.decorView.systemUiVisibility = flags
 
         binding = CameraViewActivityBinding.inflate(layoutInflater)
         setContentView(binding.root)

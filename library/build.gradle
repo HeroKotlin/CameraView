@@ -6,20 +6,28 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
 android {
-    compileSdkVersion safeExtGet('compileSdkVersion', 28)
-    buildToolsVersion safeExtGet('buildToolsVersion', '28.0.3')
+    namespace 'com.github.herokotlin.cameraview'
+    compileSdkVersion safeExtGet('compileSdkVersion', 35)
+    buildToolsVersion safeExtGet('buildToolsVersion', '35.0.0')
 
+    buildFeatures {
+        viewBinding true
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_21 // 统一为 Java 21
+        targetCompatibility JavaVersion.VERSION_21
+    }
+    kotlinOptions {
+        jvmTarget = "21" // 统一为 Kotlin JVM 21
+    }
     defaultConfig {
-        minSdkVersion safeExtGet('minSdkVersion', 16)
-        targetSdkVersion safeExtGet('targetSdkVersion', 28)
+        minSdkVersion safeExtGet('minSdkVersion', 20)
+        targetSdkVersion safeExtGet('targetSdkVersion', 35)
         versionCode 1
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
-    }
-    buildFeatures {
-        viewBinding true
     }
     buildTypes {
         release {
@@ -33,12 +41,12 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    implementation "androidx.appcompat:appcompat:${safeExtGet('androidxVersion', '1.1.0')}"
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:${safeExtGet('kotlinVersion', '1.7.20')}"
+    implementation "androidx.appcompat:appcompat:${safeExtGet('androidxVersion', '1.6.1')}"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:${safeExtGet('kotlinVersion', '2.0.21')}"
 
     api "com.otaliastudios:cameraview:${safeExtGet('cameraviewVersion', '2.7.2')}"
 
-    implementation 'com.github.herokotlin:CircleView:0.0.9'
+    implementation 'com.github.herokotlin:CircleView:0.1.0'
 
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test:runner:1.2.0'
